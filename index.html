@@ -1,0 +1,1547 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F7F3EC">
+  <title>Flayora — Digital Print Hub</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap');
+
+  #flayora-root {
+    --paper: #F7F3EC;
+    --ink: #1D2438;
+    --red: #D64545;
+    --mustard: #E8A93A;
+    --sage: #6E8B6E;
+    --violet: #7C6FA6;
+    --charcoal: #33322E;
+    --line: #D8D2C4;
+    font-family: 'Inter', sans-serif;
+    color: var(--charcoal);
+    background:
+      radial-gradient(circle, rgba(29,36,56,0.035) 1.2px, transparent 1.3px) 0 0/22px 22px,
+      radial-gradient(ellipse at top, #FBF8F1 0%, #F7F3EC 45%, #F1EADA 100%);
+    min-height: 100%;
+    padding: 0 0 48px 0;
+    line-height: 1.5;
+    position: relative;
+  }
+  #flayora-root * { box-sizing: border-box; }
+  #flayora-root h1, #flayora-root h2, #flayora-root h3 {
+    font-family: 'Fraunces', serif;
+    margin: 0;
+    color: var(--ink);
+  }
+  #flayora-root button { font-family: inherit; cursor: pointer; }
+  #flayora-root input, #flayora-root select, #flayora-root textarea {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+  }
+
+  .fl-header {
+    padding: 28px 24px 20px;
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    background-color: rgba(255,255,255,0.55);
+    backdrop-filter: blur(2px);
+  }
+  .fl-header::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px;
+    background: linear-gradient(90deg, var(--red), var(--mustard), var(--sage), var(--violet), var(--red));
+    background-size: 300% 100%;
+    animation: fl-text-shift 7s linear infinite;
+  }
+  .fl-brand { display: flex; align-items: center; gap: 12px; }
+  .fl-stamp {
+    width: 46px; height: 46px; border-radius: 50%;
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif; font-weight: 600; font-size: 13px;
+    transform: rotate(-8deg);
+    border: 2px solid var(--ink);
+    flex-shrink: 0;
+    animation: fl-stamp-color 7s ease-in-out infinite;
+  }
+  @keyframes fl-stamp-color {
+    0%   { background: var(--red); }
+    25%  { background: var(--mustard); }
+    50%  { background: var(--sage); }
+    75%  { background: var(--violet); }
+    100% { background: var(--red); }
+  }
+  .fl-brand h1 {
+    font-size: 28px; font-weight: 700; letter-spacing: -0.01em;
+    background: linear-gradient(90deg, var(--red), var(--mustard), var(--sage), var(--violet), var(--red));
+    background-size: 300% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: fl-text-shift 7s linear infinite;
+  }
+  @keyframes fl-text-shift {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 300% 50%; }
+  }
+  .fl-brand p { margin: 2px 0 0; font-size: 13px; color: #6b6a63; }
+  .fl-team-link {
+    background: none; border: 1px solid var(--ink); color: var(--ink);
+    padding: 8px 14px; border-radius: 3px; font-size: 13px; font-weight: 500;
+    transition: background 0.15s, color 0.15s;
+  }
+  .fl-team-link:hover { background: var(--ink); color: var(--paper); }
+
+  .fl-hero {
+    margin: 20px 24px 0; border-radius: 10px; overflow: hidden; position: relative;
+    box-shadow: 0 10px 26px rgba(29,36,56,0.16);
+  }
+  .fl-hero-track {
+    display: flex; transition: transform 0.55s cubic-bezier(.65,0,.35,1);
+    will-change: transform;
+  }
+  .fl-hero-slide {
+    flex: 0 0 100%; min-height: 210px;
+    position: relative; overflow: hidden; color: #fff;
+    display: flex; flex-direction: column;
+  }
+  .fl-hero-topbar { height: 9px; background: var(--mustard); flex-shrink: 0; }
+  .fl-hero-content {
+    display: flex; align-items: center; gap: 26px; flex: 1;
+    padding: 26px 30px 40px;
+  }
+  .fl-hero-visual {
+    flex: 0 0 118px; width: 118px; height: 118px; border-radius: 18px;
+    background: rgba(255,255,255,0.14); border: 2px dashed rgba(255,255,255,0.45);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .fl-hero-visual svg { width: 56px; height: 56px; color: #fff; }
+  .fl-hero-text { flex: 1; min-width: 0; }
+  .fl-hero-eyebrow {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    opacity: 0.92; margin-bottom: 8px;
+  }
+  .fl-hero-heading { margin-bottom: 12px; }
+  .fl-hero-heading div {
+    font-family: 'Fraunces', serif; font-weight: 700; font-size: 21px; line-height: 1.2; color: #fff;
+  }
+  .fl-hero-heading div.accent { color: var(--mustard); }
+  .fl-hero-bullets { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+  .fl-hero-bullets li {
+    font-size: 13px; opacity: 0.96; padding-left: 16px; position: relative;
+  }
+  .fl-hero-bullets li::before {
+    content: ""; position: absolute; left: 0; top: 7px; width: 6px; height: 6px;
+    border-radius: 50%; background: var(--mustard);
+  }
+  .fl-hero-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 32px; height: 32px; border-radius: 50%; border: none;
+    background: rgba(255,255,255,0.28); color: #fff; font-size: 18px;
+    display: flex; align-items: center; justify-content: center; z-index: 2;
+    transition: background 0.15s;
+  }
+  .fl-hero-arrow:hover { background: rgba(255,255,255,0.45); }
+  .fl-hero-arrow.prev { left: 12px; }
+  .fl-hero-arrow.next { right: 12px; }
+  .fl-hero-dots {
+    position: absolute; bottom: 12px; left: 0; right: 0; z-index: 2;
+    display: flex; justify-content: center; gap: 7px;
+  }
+  .fl-hero-dot {
+    width: 7px; height: 7px; border-radius: 50%; border: none;
+    background: rgba(255,255,255,0.45); padding: 0; transition: background 0.15s, width 0.15s;
+  }
+  .fl-hero-dot.active { background: #fff; width: 20px; border-radius: 4px; }
+  @media (max-width: 560px) {
+    .fl-hero-content { flex-direction: column; align-items: flex-start; padding-bottom: 46px; }
+    .fl-hero-visual { width: 84px; height: 84px; flex-basis: 84px; }
+    .fl-hero-visual svg { width: 40px; height: 40px; }
+  }
+
+  .fl-sections { display: flex; gap: 10px; padding: 18px 24px 0; flex-wrap: wrap; }
+  .fl-section-btn {
+    border: 1px solid var(--line); background: #fff; color: var(--charcoal);
+    padding: 10px 18px; border-radius: 20px; font-size: 13px; font-weight: 500;
+  }
+  .fl-section-btn.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+  .fl-tabs {
+    display: flex; gap: 18px; padding: 18px 24px 14px; overflow-x: auto;
+    border-bottom: 1px solid var(--line);
+  }
+  .fl-tab {
+    background: none; border: none; padding: 0; flex: 0 0 auto;
+    display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 62px;
+  }
+  .fl-tab-badge {
+    width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center;
+    justify-content: center; background: #fff; border: 1px solid var(--line); color: var(--ink);
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .fl-tab-badge svg { width: 21px; height: 21px; }
+  .fl-tab.active .fl-tab-badge { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .fl-tab-label {
+    font-size: 11px; font-weight: 600; color: #6b6a63; text-align: center; line-height: 1.25;
+  }
+  .fl-tab.active .fl-tab-label { color: var(--ink); }
+
+
+  .fl-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 22px; padding: 28px 24px;
+  }
+  .fl-card {
+    background: #fff; border: 1px solid var(--line); border-radius: 6px;
+    position: relative; overflow: hidden; cursor: pointer;
+    box-shadow: 0 1px 3px rgba(29,36,56,0.06);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .fl-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 28px rgba(29,36,56,0.14);
+  }
+  .fl-card-top {
+    height: 108px; position: relative;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.55) 1.5px, transparent 1.6px);
+    background-size: 9px 9px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .fl-icon { color: rgba(255,255,255,0.9); display: flex; }
+  .fl-icon svg { width: 42px; height: 42px; }
+  .fl-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .fl-hole {
+    position: absolute; top: 10px; left: 10px; width: 14px; height: 14px;
+    border-radius: 50%; background: var(--paper); border: 1.5px solid rgba(0,0,0,0.25);
+  }
+  .fl-ribbon {
+    position: absolute; top: 14px; right: -34px; width: 130px; text-align: center;
+    transform: rotate(35deg); font-size: 11px; font-weight: 600; padding: 4px 0;
+    color: #fff; letter-spacing: 0.02em;
+  }
+  .fl-body { padding: 14px 16px 16px; }
+  .fl-code { font-size: 11px; color: #9a988e; margin-bottom: 4px; }
+  .fl-name { font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+  .fl-desc { font-size: 13px; color: #6b6a63; margin-bottom: 10px; min-height: 34px; }
+  .fl-price { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 12px; }
+  .fl-price.tbd { color: #9a988e; font-weight: 500; font-size: 13px; }
+  .fl-enquire {
+    display: block; width: 100%; text-align: center; text-decoration: none;
+    background: var(--ink); color: #fff; padding: 10px; border-radius: 3px;
+    font-size: 13px; font-weight: 500;
+  }
+  .fl-enquire.disabled { background: #cfcdc3; color: #837f72; pointer-events: none; }
+
+  .fl-empty { padding: 60px 24px; text-align: center; color: #9a988e; }
+
+  .fl-footer {
+    margin: 40px 0 0; position: relative; overflow: hidden; color: #fff;
+    background: linear-gradient(135deg, var(--ink) 0%, #262d47 100%);
+  }
+  .fl-footer-topbar {
+    height: 6px;
+    background: linear-gradient(90deg, var(--red), var(--mustard), var(--sage), var(--violet), var(--red));
+  }
+  .fl-footer::before {
+    content: ""; position: absolute; inset: 6px 0 0 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1.5px, transparent 1.6px);
+    background-size: 18px 18px; pointer-events: none;
+  }
+  .fl-footer-watermark {
+    position: absolute; right: -18px; bottom: -28px; width: 210px; height: 210px;
+    opacity: 0.07; transform: rotate(-10deg); pointer-events: none;
+  }
+  .fl-footer-watermark svg { width: 100%; height: 100%; color: #fff; }
+  .fl-footer-inner { position: relative; padding: 32px 24px 0; }
+  .fl-footer-about {
+    font-size: 13px; line-height: 1.7; color: rgba(255,255,255,0.82);
+    max-width: 680px; margin-bottom: 22px;
+  }
+  .fl-footer-grid { display: flex; gap: 36px; flex-wrap: wrap; margin-bottom: 18px; }
+  .fl-footer-block { flex: 1 1 220px; min-width: 220px; }
+  .fl-footer-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+    color: rgba(255,255,255,0.5); margin-bottom: 8px;
+  }
+  .fl-footer-block address {
+    font-style: normal; font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.9); margin-bottom: 8px;
+  }
+  .fl-footer-map-link {
+    display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600;
+    color: var(--mustard); text-decoration: none;
+  }
+  .fl-footer-map-link:hover { text-decoration: underline; }
+  .fl-footer-phone {
+    display: block; font-size: 14px; font-weight: 600; color: #fff; text-decoration: none;
+    margin-bottom: 6px;
+  }
+  .fl-footer-phone:hover { color: var(--mustard); }
+  .fl-footer-bottom {
+    position: relative; font-size: 11px; color: rgba(255,255,255,0.45);
+    padding: 14px 24px; border-top: 1px solid rgba(255,255,255,0.15);
+  }
+
+  /* Team view */
+  .fl-team-wrap { padding: 24px; max-width: 1020px; margin: 0 auto; }
+  .fl-team-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+  .fl-btn {
+    background: var(--ink); color: #fff; border: none; padding: 10px 16px;
+    border-radius: 3px; font-size: 13px; font-weight: 500;
+  }
+  .fl-btn.secondary { background: none; border: 1px solid var(--line); color: var(--charcoal); }
+  .fl-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .fl-table th {
+    text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--ink);
+    font-weight: 600; color: var(--ink);
+  }
+  .fl-table td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  .fl-badge { padding: 3px 9px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-block; }
+  .fl-badge.available { background: #E7EFE7; color: var(--sage); }
+  .fl-badge.reserved { background: #FBF0DC; color: #A67518; }
+  .fl-badge.sold { background: #F0E4E4; color: var(--red); }
+  .fl-badge.mto { background: #EFECF7; color: var(--violet); }
+  .fl-badge.restock { background: #F0E4E4; color: var(--red); margin-left: 5px; }
+
+  .fl-stock-toolbar {
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px;
+  }
+  .fl-stock-toolbar input[type="text"], .fl-stock-toolbar select {
+    padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; font-size: 13px;
+    font-family: inherit; background: #fff; color: var(--charcoal);
+  }
+  .fl-stock-toolbar input[type="text"] { flex: 1 1 200px; min-width: 180px; }
+  .fl-sync-note { font-size: 11px; color: #9a988e; margin-left: auto; white-space: nowrap; }
+  .fl-bulk-bar {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    background: #FBF0DC; border: 1px solid #E8D9B0; border-radius: 4px;
+    padding: 8px 12px; margin-bottom: 14px; font-size: 13px; color: #6b5620;
+  }
+  .fl-bulk-bar button {
+    border: 1px solid #A67518; background: #fff; color: #A67518;
+    padding: 5px 10px; border-radius: 3px; font-size: 12px; font-weight: 600;
+  }
+  .fl-quick-book, .fl-quick-release {
+    border: none; border-radius: 3px; padding: 5px 10px; font-size: 12px; font-weight: 600; color: #fff;
+  }
+  .fl-quick-book { background: var(--mustard); }
+  .fl-quick-release { background: var(--sage); }
+  .fl-restock-label {
+    display: flex; align-items: center; gap: 5px; font-size: 11px; color: #6b6a63; margin-top: 6px;
+  }
+  .fl-status-select, .fl-name-input { padding: 5px 7px; border: 1px solid var(--line); border-radius: 3px; }
+  .fl-row-actions button { border: none; background: none; font-size: 12px; color: #9a988e; margin-left: 8px; }
+  .fl-row-actions button:hover { color: var(--red); }
+
+  .fl-modal-bg {
+    position: fixed; inset: 0; background: rgba(29,36,56,0.5);
+    display: flex; align-items: center; justify-content: center; z-index: 50;
+    padding: 20px; overflow-y: auto;
+  }
+  .fl-modal {
+    background: #fff; border-radius: 6px; padding: 28px; width: 320px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+  }
+  .fl-modal h3 { font-size: 18px; margin-bottom: 14px; }
+  .fl-modal input, .fl-modal select, .fl-modal textarea {
+    width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 3px;
+    margin-bottom: 12px;
+  }
+  .fl-modal label { font-size: 12px; color: #6b6a63; display: block; margin-bottom: 4px; }
+  .fl-modal-actions { display: flex; gap: 8px; margin-top: 4px; }
+  .fl-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+  .fl-error { color: var(--red); font-size: 12px; margin-bottom: 10px; }
+  .fl-icon-picker { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 12px; }
+  .fl-icon-opt {
+    border: 1px solid var(--line); border-radius: 4px; padding: 6px; background: #fff;
+    display: flex; align-items: center; justify-content: center; color: var(--ink);
+  }
+  .fl-icon-opt svg { width: 20px; height: 20px; }
+  .fl-icon-opt.selected { border-color: var(--red); background: #FCEFEE; }
+
+  .fl-detail-modal {
+    background: #fff; border-radius: 8px; overflow: hidden; position: relative;
+    width: 100%; max-width: 720px; max-height: 88vh; overflow-y: auto;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    display: flex; flex-wrap: wrap;
+  }
+  .fl-detail-close {
+    position: absolute; top: 12px; right: 12px; z-index: 3;
+    width: 30px; height: 30px; border-radius: 50%; border: none;
+    background: rgba(29,36,56,0.08); color: var(--ink); font-size: 15px;
+  }
+  .fl-detail-close:hover { background: rgba(29,36,56,0.16); }
+  .fl-detail-gallery {
+    flex: 1 1 320px; min-width: 280px; background: var(--paper);
+    display: flex; flex-direction: column; align-items: center; padding: 24px;
+  }
+  .fl-detail-image-wrap {
+    position: relative; width: 100%; aspect-ratio: 1 / 1; max-height: 340px;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+    border-radius: 6px; background: #fff; border: 1px solid var(--line);
+  }
+  .fl-detail-image-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .fl-detail-icon-large { width: 140px; height: 140px; color: var(--violet); opacity: 0.6; }
+  .fl-detail-icon-large svg { width: 100%; height: 100%; }
+  .fl-detail-nav {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 30px; height: 30px; border-radius: 50%; border: none;
+    background: rgba(29,36,56,0.55); color: #fff; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .fl-detail-nav:hover { background: rgba(29,36,56,0.75); }
+  .fl-detail-nav.prev { left: 8px; }
+  .fl-detail-nav.next { right: 8px; }
+  .fl-detail-thumbs { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; justify-content: center; }
+  .fl-detail-thumb {
+    width: 48px; height: 48px; border-radius: 4px; border: 2px solid transparent; padding: 0;
+    overflow: hidden; background: #fff;
+  }
+  .fl-detail-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .fl-detail-thumb.active { border-color: var(--red); }
+  .fl-detail-info { flex: 1 1 320px; min-width: 280px; padding: 28px 26px; }
+  .fl-detail-eyebrow { font-size: 12px; color: #9a988e; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .fl-detail-info h2 { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700; color: var(--ink); margin-bottom: 10px; }
+  .fl-detail-price { font-size: 20px; font-weight: 700; color: var(--red); margin-bottom: 8px; }
+  .fl-detail-badge {
+    display: inline-block; background: #FBF0DC; color: #A67518; font-size: 12px; font-weight: 600;
+    padding: 4px 10px; border-radius: 12px; margin-bottom: 12px;
+  }
+  .fl-detail-desc { font-size: 13px; line-height: 1.6; color: var(--charcoal); margin-bottom: 18px; }
+  .fl-detail-specs { margin-bottom: 20px; }
+  .fl-detail-specs-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #9a988e; margin-bottom: 8px; }
+  .fl-detail-specs dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0; }
+  .fl-detail-specs dt { font-size: 12px; font-weight: 600; color: #6b6a63; }
+  .fl-detail-specs dd { font-size: 13px; color: var(--charcoal); margin: 0; }
+</style>
+</head>
+<body>
+<div id="flayora-root"></div>
+
+<!-- Local-first storage adapter (IndexedDB). No Appwrite account is required in this build. -->
+<script>
+(() => {
+  const DB_NAME = "flayora-local-v1";
+  const STORE_NAME = "records";
+  let dbPromise;
+  function openDb() {
+    if (dbPromise) return dbPromise;
+    dbPromise = new Promise((resolve, reject) => {
+      if (!("indexedDB" in window)) {
+        reject(new Error("This browser does not support local database storage."));
+        return;
+      }
+      const request = indexedDB.open(DB_NAME, 1);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.createObjectStore(STORE_NAME, { keyPath: "key" });
+        }
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error || new Error("Could not open local storage."));
+    });
+    return dbPromise;
+  }
+  async function requestResult(mode, operation) {
+    const db = await openDb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, mode);
+      const store = tx.objectStore(STORE_NAME);
+      let request;
+      try { request = operation(store); }
+      catch (err) { reject(err); return; }
+      if (request) {
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error || new Error("Local storage operation failed."));
+      } else {
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => reject(tx.error || new Error("Local storage operation failed."));
+        tx.onabort = () => reject(tx.error || new Error("Local storage operation aborted."));
+      }
+    });
+  }
+  window.storage = {
+    async get(key) {
+      const normalizedKey = String(key);
+      const row = await requestResult("readonly", store => store.get(normalizedKey));
+      return row ? { key: normalizedKey, value: row.value, shared: false, storageMode: "local" } : null;
+    },
+    async set(key, value) {
+      const normalizedKey = String(key);
+      const storedValue = typeof value === "string" ? value : JSON.stringify(value);
+      await requestResult("readwrite", store => store.put({ key: normalizedKey, value: storedValue }));
+      return { key: normalizedKey, value: storedValue, shared: false, storageMode: "local" };
+    },
+    async delete(key) {
+      const normalizedKey = String(key);
+      await requestResult("readwrite", store => store.delete(normalizedKey));
+      return { key: normalizedKey, deleted: true, shared: false, storageMode: "local" };
+    },
+    async list(prefix) {
+      const db = await openDb();
+      const keys = await new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, "readonly");
+        const request = tx.objectStore(STORE_NAME).getAllKeys();
+        request.onsuccess = () => resolve(request.result.map(String).filter(key => key.startsWith(String(prefix || ""))));
+        request.onerror = () => reject(request.error || new Error("Could not list local records."));
+      });
+      return { keys, prefix: prefix || "", shared: false, storageMode: "local" };
+    }
+  };
+})();
+</script>
+<script>
+(function(){
+  const WHATSAPP_NUMBER = "917735565477"; // India country code assumed
+  // Change this to something private only your team knows — avoid your shop name,
+  // since anyone who views the page source could otherwise guess it easily.
+  const TEAM_PIN = "puri-92-fl"; // Team Desk PIN gate for local preview mode.
+  const STORAGE_KEY = "flayora-catalog";
+  const ANALYTICS_KEY = "flayora-analytics";
+  const ACCENTS = ["#E8A93A", "#D64545", "#6E8B6E", "#7C6FA6"];
+
+  // Shown in the footer — edit if your details change.
+  const SHOP_INFO = {
+    address: "In front of Ramahari Bidyapitha High School, Sasan Damodarpur, Mangalaghata, Puri – 752002",
+    mapLink: "https://maps.app.goo.gl/VRuD8h9SjcsE1Rdu9?g_st=aw",
+    phones: ["7735565477", "6372602549"]
+  };
+
+  const ICONS = {
+    tshirt: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M8 4 4 7l2.2 3 1.8-1V20h8V9l1.8 1L20 7l-4-3-2 2h-4L8 4Z"/></svg>',
+    cushion: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="4.5" y="4.5" width="15" height="15" rx="2"/><path d="M6 6c2.5 2.5 3.5 2.5 6 0M18 6c-2.5 2.5-3.5 2.5-6 0M6 18c2.5-2.5 3.5-2.5 6 0M18 18c-2.5-2.5-3.5-2.5-6 0"/></svg>',
+    cutout: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="7" r="3"/><path d="M7 21v-4a5 5 0 0 1 10 0v4"/><path d="M3 21h18" stroke-dasharray="2.2 2.2"/></svg>',
+    frame: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="4" width="16" height="16" rx="1"/><rect x="7.5" y="7.5" width="9" height="9" rx="0.5"/></svg>',
+    mug: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M4 8h12v9a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V8Z"/><path d="M16 10h2a2 2 0 0 1 0 4h-2"/></svg>',
+    lamp: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="9" r="5"/><path d="M9.5 19h5M10 22h4M12 14v2"/></svg>',
+    mirror: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><ellipse cx="12" cy="10" rx="6" ry="8"/><path d="M12 18v4M9 22h6"/></svg>',
+    keychain: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="7" cy="7" r="4"/><path d="M10.3 10.3 19 19M15 19l4-4M11 19l4-4"/></svg>',
+    banner: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 5h18v10H8l-3 4V5Z"/><path d="M7 9h10M7 12h6"/></svg>',
+    card: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="6" width="18" height="12" rx="1"/><path d="M6.5 10h5M6.5 14h3.5M14.5 10h3v4h-3z"/></svg>',
+    gift: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="4" y="9" width="16" height="11" rx="1"/><path d="M4 13h16M12 9v11"/><path d="M9 9c-2 0-3-1.6-3-3s1.2-2.6 3-.8c1.8-1.8 3-.2 3 .8M15 9c2 0 3-1.6 3-3s-1.2-2.6-3-.8c-1.8-1.8-3-.2-3 .8"/></svg>',
+    all: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg>'
+  };
+  const ICON_LABELS = { mug:"Mug", tshirt:"T-shirt", frame:"Frame", cushion:"Cushion", cutout:"Cut-out", lamp:"LED lamp", mirror:"Mirror", keychain:"Keychain", banner:"Banner", card:"Card", gift:"Other" };
+  const STATUS_LABELS = { available: "Available", reserved: "Booked", sold: "Sold" };
+
+  function timeAgo(date) {
+    if (!date) return "";
+    const secs = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (secs < 5) return "synced just now";
+    if (secs < 60) return `synced ${secs}s ago`;
+    const mins = Math.floor(secs / 60);
+    return `synced ${mins}m ago`;
+  }
+
+  // Edit these to change the rotating banner at the top of the shop.
+  // icon: any key from ICONS. headingLines: array of {text, accent} — accent lines render in mustard.
+  // bullets: short feature points. bg: solid background color for the slide.
+  const HERO_SLIDES = [
+    { icon: "lamp", eyebrow: "New launch", headingLines: [{ text: "LED Name Lamps", accent: false }, { text: "Now In Store", accent: true }], bullets: ["Glows in 7 colours", "Personalised with any name or photo", "Ready in 2 days"], bg: "var(--red)" },
+    { icon: "frame", eyebrow: "Limited time", headingLines: [{ text: "20% Off", accent: true }, { text: "Photo Frames", accent: false }], bullets: ["A3 & A4 sizes available", "Mounted and ready to hang", "Offer valid this week only"], bg: "var(--sage)" },
+    { icon: "banner", eyebrow: "For businesses", headingLines: [{ text: "Business Cards", accent: false }, { text: "& Banners", accent: true }], bullets: ["Bulk pricing for shops & events", "Custom size flex printing", "Fast turnaround"], bg: "var(--violet)" },
+    { icon: "gift", eyebrow: "Festive gifting", headingLines: [{ text: "Gifts For", accent: false }, { text: "Every Occasion", accent: true }], bullets: ["Mugs, cushions, mirrors & more", "Made to order with your photos", "Great for birthdays & festivals"], bg: "var(--ink)" },
+    { icon: "cutout", eyebrow: "Quick turnaround", headingLines: [{ text: "Same-Day", accent: true }, { text: "Printing Available", accent: false }], bullets: ["Walk in or WhatsApp your files", "Most orders ready within the day", "No minimum order size"], bg: "#2E6F64" }
+  ];
+
+  const SAMPLE_PRODUCTS = [
+    { code:"FL-101", name:"Photo Print T-Shirt", section:"Gifts & Personalized Items", category:"T-Shirts", price:0, desc:"Your photo or design printed on a t-shirt.", icon:"tshirt", stockType:"mto", status:"available", reservedBy:"", reservedAt:"" },
+    { code:"FL-102", name:"Photo Print Cushion", section:"Gifts & Personalized Items", category:"Cushions", price:0, desc:"Custom photo printed on a cushion cover.", icon:"cushion", stockType:"mto", status:"available", reservedBy:"", reservedAt:"" },
+    { code:"FL-103", name:"Cut-out Photo Frame", section:"Gifts & Personalized Items", category:"Cut-out Frames", price:0, desc:"Shaped cut-out standee style photo frame.", icon:"cutout", stockType:"mto", status:"available", reservedBy:"", reservedAt:"" },
+    { code:"FL-104", name:"Mounting A4 Photo Frame", section:"Gifts & Personalized Items", category:"Frames", price:0, desc:"A4 size wall-mounted photo frame.", icon:"frame", stockType:"mto", status:"available", reservedBy:"", reservedAt:"" },
+    { code:"FL-105", name:"A3 Photo Frame", section:"Gifts & Personalized Items", category:"Frames", price:0, desc:"Larger A3 size framed print.", icon:"frame", stockType:"mto", status:"available", reservedBy:"", reservedAt:"" },
+    { code:"FL-106", name:"Magic Mug", section:"Gifts & Personalized Items", category:"Mugs", price:0, desc:"Colour-changing mug with custom print.", icon:"mug", stockType:"mto", status:"available", reservedBy:"", reservedAt:"" },
+    { code:"FL-107", name:"LED Name Lamp", section:"Gifts & Personalized Items", category:"Gift Items", price:0, desc:"Personalized name/photo LED lamp.", icon:"lamp", stockType:"mto", status:"available", reservedBy:"", reservedAt:"" },
+    { code:"FL-108", name:"Magic Mirror", section:"Gifts & Personalized Items", category:"Gift Items", price:0, desc:"Photo/quote printed decorative mirror.", icon:"mirror", stockType:"mto", status:"available", reservedBy:"", reservedAt:"" },
+    { code:"FL-109", name:"Key Ring (Single Side)", section:"Gifts & Personalized Items", category:"Keychains", price:0, desc:"Photo print on one side.", icon:"keychain", stockType:"mto", status:"available", reservedBy:"", reservedAt:"" },
+    { code:"FL-110", name:"Key Ring (Double Side)", section:"Gifts & Personalized Items", category:"Keychains", price:0, desc:"Photo print on both sides.", icon:"keychain", stockType:"mto", status:"available", reservedBy:"", reservedAt:"" },
+    { code:"FL-201", name:"Flex Banner", section:"Printing & Signage", category:"Flex & Banners", price:0, desc:"Custom size flex banner printing.", icon:"banner", stockType:"mto", status:"available", reservedBy:"", reservedAt:"" },
+    { code:"FL-202", name:"Business Cards", section:"Printing & Signage", category:"Business Cards", price:0, desc:"Printed business cards, per box.", icon:"card", stockType:"mto", status:"available", reservedBy:"", reservedAt:"" }
+  ];
+
+  let state = {
+    products: [], view: "shop", activeSection: "", activeCategory: "All",
+    teamUnlocked: false, showProductModal: false, editingCode: null, pinError: "", productModalError: "",
+    analytics: { visits: 0, enquiries: [] }, teamTab: "stock", pendingIcon: "gift",
+    imageCache: {}, stockSearch: "", stockStatusFilter: "all", selectedCodes: [],
+    lastSyncedAt: null, duplicateSource: null, viewingProduct: null, detailImageIndex: 0
+  };
+  let pendingUploadDataUrl = null;
+  let pendingUploadDataUrls = [null, null, null];
+  let pendingRemoveSlots = new Set();
+  let heroIndex = 0;
+  let heroTimer = null;
+  let stockSyncTimer = null;
+
+  const root = document.getElementById("flayora-root");
+
+  const MAX_IMAGE_BYTES = 2 * 1024 * 1024; // 2MB cap for stored product photos
+
+  function approxDataUrlBytes(dataUrl) {
+    const base64 = dataUrl.split(",")[1] || "";
+    return Math.round(base64.length * 0.75);
+  }
+
+  function compressImage(file) {
+    return new Promise((resolve, reject) => {
+      const isPng = file.type === "image/png";
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxW = 1400; // decent resolution for product photos
+          let scale = Math.min(1, maxW / img.width);
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+
+          function drawAtScale(s) {
+            canvas.width = Math.max(1, Math.round(img.width * s));
+            canvas.height = Math.max(1, Math.round(img.height * s));
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          }
+
+          drawAtScale(scale);
+
+          if (isPng) {
+            // Keep PNG to preserve transparency; only shrink dimensions if needed to stay under the cap.
+            let dataUrl = canvas.toDataURL("image/png");
+            let guard = 0;
+            while (approxDataUrlBytes(dataUrl) > MAX_IMAGE_BYTES && scale > 0.25 && guard < 8) {
+              scale *= 0.85;
+              drawAtScale(scale);
+              dataUrl = canvas.toDataURL("image/png");
+              guard++;
+            }
+            resolve(dataUrl);
+          } else {
+            // JPEG (or anything else): start high quality, step down only if over the cap.
+            let quality = 0.9;
+            let dataUrl = canvas.toDataURL("image/jpeg", quality);
+            let guard = 0;
+            while (approxDataUrlBytes(dataUrl) > MAX_IMAGE_BYTES && quality > 0.4 && guard < 8) {
+              quality -= 0.1;
+              dataUrl = canvas.toDataURL("image/jpeg", quality);
+              guard++;
+            }
+            resolve(dataUrl);
+          }
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function loadImages() {
+    try {
+      const listRes = await window.storage.list("flayora-image:", true);
+      const keys = (listRes && listRes.keys) || [];
+      await Promise.all(keys.map(async k => {
+        try {
+          const r = await window.storage.get(k, true);
+          if (!r || !r.value) return;
+          const rest = k.slice("flayora-image:".length); // "CODE" (legacy) or "CODE:N"
+          const lastColon = rest.lastIndexOf(":");
+          let code, idx;
+          if (lastColon === -1 || !/^\d+$/.test(rest.slice(lastColon + 1))) {
+            code = rest; idx = 0;
+          } else {
+            code = rest.slice(0, lastColon);
+            idx = parseInt(rest.slice(lastColon + 1), 10);
+          }
+          if (!state.imageCache[code]) state.imageCache[code] = [];
+          state.imageCache[code][idx] = r.value;
+        } catch (e) {}
+      }));
+    } catch (e) { /* no images yet */ }
+  }
+
+  async function saveImage(code, index, dataUrl) {
+    try {
+      const saved = await window.storage.set(`flayora-image:${code}:${index}`, dataUrl, true);
+      if (!state.imageCache[code]) state.imageCache[code] = [];
+      state.imageCache[code][index] = (saved && saved.value) || dataUrl;
+    } catch (e) { console.error("Image save failed", e); throw e; }
+  }
+
+  async function deleteImageSlot(code, index) {
+    try { await window.storage.delete(`flayora-image:${code}:${index}`, true); } catch (e) {}
+    if (state.imageCache[code]) delete state.imageCache[code][index];
+  }
+
+  async function deleteImage(code) {
+    const keysToTry = [`flayora-image:${code}`, `flayora-image:${code}:0`, `flayora-image:${code}:1`, `flayora-image:${code}:2`];
+    await Promise.all(keysToTry.map(k => window.storage.delete(k, true).catch(() => {})));
+    delete state.imageCache[code];
+  }
+
+  async function loadCatalog() {
+    try {
+      const res = await window.storage.get(STORAGE_KEY, true);
+      state.products = res && res.value ? JSON.parse(res.value) : SAMPLE_PRODUCTS;
+    } catch (e) {
+      console.error("Could not load the shared catalogue:", e);
+      state.products = SAMPLE_PRODUCTS;
+      state.cloudReadError = String(e && (e.message || e) || "Local storage is unavailable");
+    }
+    state.activeSection = state.products[0] ? state.products[0].section : "";
+    await loadImages();
+    await loadAnalytics();
+    state.analytics.visits += 1;
+    await saveAnalytics();
+    state.lastSyncedAt = new Date();
+    render();
+    startStockSync();
+  }
+
+  async function pollCatalog(force) {
+    if (!force && (state.view !== "team" || !state.teamUnlocked || state.teamTab !== "stock" || state.showProductModal)) return;
+    try {
+      const res = await window.storage.get(STORAGE_KEY, true);
+      if (res && res.value) {
+        const fresh = JSON.parse(res.value);
+        if (JSON.stringify(fresh) !== JSON.stringify(state.products)) {
+          state.products = fresh;
+        }
+      }
+      state.lastSyncedAt = new Date();
+      render();
+    } catch (e) {
+      console.error("Sync failed", e);
+    }
+  }
+
+  function startStockSync() {
+    clearInterval(stockSyncTimer);
+    stockSyncTimer = setInterval(() => pollCatalog(false), 6000);
+  }
+
+  function exportEnquiriesCSV() {
+    const rows = [["Time", "Code", "Product"], ...state.analytics.enquiries.map(e => [e.time, e.code, e.name])];
+    const csv = rows.map(r => r.map(field => `"${String(field).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "flayora-enquiries.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  async function saveCatalog() {
+    try {
+      await window.storage.set(STORAGE_KEY, JSON.stringify(state.products), true);
+      state.lastSyncedAt = new Date();
+      return true;
+    } catch (e) {
+      console.error("Shared catalogue save failed:", e);
+      const message = String(e && (e.message || e) || "Unknown error");
+      alert("Flayora could not save this change in this browser. Check browser storage availability and try again.\n\n" + message);
+      throw e;
+    }
+  }
+
+  async function loadAnalytics() {
+    try {
+      const res = await window.storage.get(ANALYTICS_KEY, true);
+      state.analytics = res && res.value ? JSON.parse(res.value) : { visits: 0, enquiries: [] };
+    } catch (e) { state.analytics = { visits: 0, enquiries: [] }; }
+  }
+
+  async function saveAnalytics() {
+    // Anonymous visitors must not be allowed to write arbitrary records into the shared key/value table.
+    // Local preview analytics are stored in this browser only.
+    if (!state.teamUnlocked) return false;
+    try {
+      await window.storage.set(ANALYTICS_KEY, JSON.stringify(state.analytics), true);
+      return true;
+    } catch (e) {
+      console.error("Analytics save failed", e);
+      return false;
+    }
+  }
+
+  async function logEnquiry(code, name) {
+    state.analytics.enquiries.unshift({ code, name, time: new Date().toLocaleString() });
+    state.analytics.enquiries = state.analytics.enquiries.slice(0, 200);
+    await saveAnalytics();
+  }
+
+  function accentFor(category) {
+    const cats = [...new Set(state.products.map(p => p.category))];
+    const idx = cats.indexOf(category);
+    return ACCENTS[idx % ACCENTS.length] || ACCENTS[0];
+  }
+
+  function waLink(p) {
+    const priceText = p.price ? `- Rs.${p.price} ` : "";
+    const msg = `Hi Flayora! I'm interested in ${p.name} (Code: ${p.code}) ${priceText}- Is it available?`;
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+
+  function render() {
+    // Preserve unsaved product-form text when photo/icon actions redraw the Team Desk.
+    const draft = {};
+    if (state.showProductModal) {
+      ["pf-code", "pf-price", "pf-name", "pf-section", "pf-category", "pf-desc", "pf-specs", "pf-image", "pf-stocktype"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) draft[id] = el.value;
+      });
+    }
+
+    if (state.view === "shop") root.innerHTML = renderShop();
+    else root.innerHTML = renderTeam();
+
+    if (state.showProductModal) {
+      Object.entries(draft).forEach(([id, value]) => {
+        const el = document.getElementById(id);
+        if (el && !el.disabled) el.value = value;
+      });
+    }
+    attachEvents();
+  }
+
+  function goToHeroSlide(i) {
+    heroIndex = (i + HERO_SLIDES.length) % HERO_SLIDES.length;
+    const track = document.getElementById("fl-hero-track");
+    if (track) track.style.transform = `translateX(-${heroIndex * 100}%)`;
+    document.querySelectorAll(".fl-hero-dot").forEach((d, idx) => d.classList.toggle("active", idx === heroIndex));
+  }
+
+  function startHeroAutoplay() {
+    clearInterval(heroTimer);
+    heroTimer = setInterval(() => goToHeroSlide(heroIndex + 1), 4500);
+  }
+
+  function renderShop() {
+    const sections = [...new Set(state.products.map(p => p.section))];
+    const sectionProducts = state.products.filter(p => p.section === state.activeSection);
+    const cats = ["All", ...new Set(sectionProducts.map(p => p.category))];
+    const visible = state.activeCategory === "All" ? sectionProducts : sectionProducts.filter(p => p.category === state.activeCategory);
+
+    const sectionTabs = sections.map(s => `<button class="fl-section-btn ${s === state.activeSection ? "active" : ""}" data-section="${escapeHtml(s)}">${escapeHtml(s)}</button>`).join("");
+    const tabs = cats.map(c => {
+      const iconKey = c === "All" ? "all" : ((sectionProducts.find(p => p.category === c) || {}).icon || "gift");
+      return `
+        <button class="fl-tab ${c === state.activeCategory ? "active" : ""}" data-cat="${escapeHtml(c)}">
+          <span class="fl-tab-badge">${ICONS[iconKey] || ICONS.gift}</span>
+          <span class="fl-tab-label">${escapeHtml(c)}</span>
+        </button>`;
+    }).join("");
+
+    const cards = visible.map(p => {
+      const accent = accentFor(p.category);
+      const locked = p.stockType === "single" && p.status !== "available";
+      const ribbon = locked ? `<div class="fl-ribbon" style="background:${p.status === "sold" ? "var(--ink)" : "var(--mustard)"}">${p.status === "sold" ? "Sold" : "Booked"}</div>` : "";
+      const priceHtml = p.price ? `<div class="fl-price">₹${p.price}</div>` : `<div class="fl-price tbd">Ask for price</div>`;
+      const galleryPhotos = (state.imageCache[p.code] || []).filter(Boolean);
+      const photo = galleryPhotos[0] || p.image;
+      return `
+        <div class="fl-card" data-detail="${escapeHtml(p.code)}">
+          <div class="fl-card-top" style="background:${accent}">
+            <div class="fl-hole"></div>
+            <span class="fl-icon">${ICONS[p.icon] || ICONS.gift}</span>
+            ${photo ? `<img class="fl-photo" src="${escapeHtml(photo)}" alt="${escapeHtml(p.name)}" onerror="this.style.display='none'" />` : ""}
+            ${ribbon}
+          </div>
+          <div class="fl-body">
+            <div class="fl-code">${escapeHtml(p.code)}</div>
+            <div class="fl-name">${escapeHtml(p.name)}</div>
+            <div class="fl-desc">${escapeHtml(p.desc || "")}</div>
+            ${priceHtml}
+            <a class="fl-enquire ${locked ? "disabled" : ""}" data-enquire-code="${escapeHtml(p.code)}" data-enquire-name="${escapeHtml(p.name)}" href="${locked ? "#" : waLink(p)}" target="_blank" rel="noopener">${locked ? (p.status === "sold" ? "Sold out" : "Booked") : "Enquire on WhatsApp"}</a>
+          </div>
+        </div>`;
+    }).join("");
+
+    return `
+      <div class="fl-header">
+        <div class="fl-brand">
+          <div class="fl-stamp">FL</div>
+          <div>
+            <h1>Flayora</h1>
+            <p>Digital Print Hub — custom prints &amp; gifting</p>
+          </div>
+        </div>
+        <button class="fl-team-link" id="fl-open-team">Team desk</button>
+      </div>
+      <div class="fl-hero" id="fl-hero">
+        <div class="fl-hero-track" id="fl-hero-track" style="transform:translateX(-${heroIndex * 100}%)">
+          ${HERO_SLIDES.map(s => `
+            <div class="fl-hero-slide" style="background:${s.bg}">
+              <div class="fl-hero-topbar"></div>
+              <div class="fl-hero-content">
+                <div class="fl-hero-visual">${ICONS[s.icon] || ICONS.gift}</div>
+                <div class="fl-hero-text">
+                  <div class="fl-hero-eyebrow">${escapeHtml(s.eyebrow)}</div>
+                  <div class="fl-hero-heading">
+                    ${s.headingLines.map(l => `<div class="${l.accent ? "accent" : ""}">${escapeHtml(l.text)}</div>`).join("")}
+                  </div>
+                  <ul class="fl-hero-bullets">
+                    ${s.bullets.map(b => `<li>${escapeHtml(b)}</li>`).join("")}
+                  </ul>
+                </div>
+              </div>
+            </div>`).join("")}
+        </div>
+        <button class="fl-hero-arrow prev" id="fl-hero-prev" aria-label="Previous">‹</button>
+        <button class="fl-hero-arrow next" id="fl-hero-next" aria-label="Next">›</button>
+        <div class="fl-hero-dots">
+          ${HERO_SLIDES.map((_, i) => `<button class="fl-hero-dot ${i === heroIndex ? "active" : ""}" data-slide="${i}"></button>`).join("")}
+        </div>
+      </div>
+      <div class="fl-sections">${sectionTabs}</div>
+      <div class="fl-tabs">${tabs}</div>
+      <div class="fl-grid">${cards || `<div class="fl-empty">No products in this category yet.</div>`}</div>
+      <div class="fl-footer">
+        <div class="fl-footer-topbar"></div>
+        <div class="fl-footer-watermark">${ICONS.gift}</div>
+        <div class="fl-footer-inner">
+          <p class="fl-footer-about">Flayora is Puri's neighbourhood digital print hub for custom prints, personalised gifting and signage. From photo mugs and LED name lamps to business cards and flex banners, every order is made to order with quick turnaround. Visit our store, call us, or drop a message on WhatsApp — we're happy to help you bring your ideas to life.</p>
+          <div class="fl-footer-grid">
+            <div class="fl-footer-block">
+              <div class="fl-footer-label">Visit us</div>
+              <address>${escapeHtml(SHOP_INFO.address)}</address>
+              <a class="fl-footer-map-link" href="${escapeHtml(SHOP_INFO.mapLink)}" target="_blank" rel="noopener">Get directions on Google Maps →</a>
+            </div>
+            <div class="fl-footer-block">
+              <div class="fl-footer-label">Call or WhatsApp</div>
+              ${SHOP_INFO.phones.map(ph => `<a class="fl-footer-phone" href="tel:+91${ph}">+91 ${ph}</a>`).join("")}
+            </div>
+          </div>
+        </div>
+        <div class="fl-footer-bottom">© ${new Date().getFullYear()} Flayora — Digital Print Hub, Puri.</div>
+      </div>
+      ${state.viewingProduct ? renderProductDetail() : ""}
+    `;
+  }
+
+  function parseSpecs(specsText) {
+    if (!specsText) return [];
+    return specsText.split("\n").map(l => l.trim()).filter(Boolean).map(line => {
+      const i = line.indexOf(":");
+      return i === -1 ? { label: "", value: line } : { label: line.slice(0, i).trim(), value: line.slice(i + 1).trim() };
+    });
+  }
+
+  function renderProductDetail() {
+    const p = state.products.find(p => p.code === state.viewingProduct);
+    if (!p) return "";
+    const gallery = (state.imageCache[p.code] || []).filter(Boolean);
+    const images = gallery.length ? gallery : (p.image ? [p.image] : []);
+    const idx = images.length ? Math.min(state.detailImageIndex, images.length - 1) : 0;
+    const locked = p.stockType === "single" && p.status !== "available";
+    const specs = parseSpecs(p.specs);
+    const priceHtml = p.price ? `₹${p.price}` : "Ask for price";
+
+    return `
+      <div class="fl-modal-bg" id="fl-detail-bg">
+        <div class="fl-detail-modal">
+          <button class="fl-detail-close" id="fl-detail-close" aria-label="Close">✕</button>
+          <div class="fl-detail-gallery">
+            ${images.length ? `
+              <div class="fl-detail-image-wrap">
+                <img src="${escapeHtml(images[idx])}" alt="${escapeHtml(p.name)}"/>
+                ${images.length > 1 ? `
+                  <button class="fl-detail-nav prev" id="fl-detail-prev" aria-label="Previous">‹</button>
+                  <button class="fl-detail-nav next" id="fl-detail-next" aria-label="Next">›</button>
+                ` : ""}
+              </div>
+              ${images.length > 1 ? `
+                <div class="fl-detail-thumbs">
+                  ${images.map((img, i) => `<button class="fl-detail-thumb ${i === idx ? "active" : ""}" data-thumb="${i}"><img src="${escapeHtml(img)}"/></button>`).join("")}
+                </div>` : ""}
+            ` : `<div class="fl-detail-icon-large">${ICONS[p.icon] || ICONS.gift}</div>`}
+          </div>
+          <div class="fl-detail-info">
+            <div class="fl-detail-eyebrow">${escapeHtml(p.category)} · ${escapeHtml(p.code)}</div>
+            <h2>${escapeHtml(p.name)}</h2>
+            <div class="fl-detail-price">${priceHtml}</div>
+            ${locked ? `<div class="fl-detail-badge">${p.status === "sold" ? "Sold out" : "Currently booked"}</div>` : ""}
+            ${p.desc ? `<p class="fl-detail-desc">${escapeHtml(p.desc)}</p>` : ""}
+            ${specs.length ? `
+              <div class="fl-detail-specs">
+                <div class="fl-detail-specs-title">Product details</div>
+                <dl>${specs.map(r => r.label ? `<dt>${escapeHtml(r.label)}</dt><dd>${escapeHtml(r.value)}</dd>` : `<dt></dt><dd>${escapeHtml(r.value)}</dd>`).join("")}</dl>
+              </div>` : ""}
+            <a class="fl-enquire ${locked ? "disabled" : ""}" data-enquire-code="${escapeHtml(p.code)}" data-enquire-name="${escapeHtml(p.name)}" href="${locked ? "#" : waLink(p)}" target="_blank" rel="noopener">${locked ? (p.status === "sold" ? "Sold out" : "Booked") : "Enquire on WhatsApp"}</a>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderTeam() {
+    if (!state.teamUnlocked) {
+      return `
+        <div class="fl-modal-bg">
+          <div class="fl-modal">
+            <h3>Team desk</h3>
+            <label>Team PIN</label>
+            <input type="password" id="fl-pin-input" placeholder="Enter Team PIN" autocomplete="current-password"/>
+            <div style="font-size:11px;color:#6b6a63;margin:-3px 0 10px;">Local preview mode: changes are saved only in this browser until cloud hosting is configured.</div>
+            ${state.pinError ? `<div class="fl-error">${escapeHtml(state.pinError)}</div>` : ""}
+            <div class="fl-modal-actions">
+              <button class="fl-btn" id="fl-pin-submit">Unlock</button>
+              <button class="fl-btn secondary" id="fl-pin-cancel">Back to shop</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    const filteredProducts = state.products.filter(p => {
+      const q = state.stockSearch.trim().toLowerCase();
+      const matchesSearch = !q || p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q);
+      const f = state.stockStatusFilter;
+      const matchesFilter = f === "all" ? true : f === "mto" ? p.stockType === "mto" : (p.stockType === "single" && p.status === f);
+      return matchesSearch && matchesFilter;
+    });
+
+    const rows = filteredProducts.map(p => {
+      const isSingle = p.stockType === "single";
+      const badge = !isSingle
+        ? `<span class="fl-badge mto">Made to order</span>`
+        : `<span class="fl-badge ${p.status}">${STATUS_LABELS[p.status] || p.status}</span>${p.needsRestock ? `<span class="fl-badge restock">Needs restock</span>` : ""}`;
+      const quickAction = isSingle
+        ? (p.status === "available"
+            ? `<button class="fl-quick-book" data-book="${p.code}">Book it</button>`
+            : `<button class="fl-quick-release" data-release="${p.code}">Release</button>`)
+        : "";
+      const restockToggle = (isSingle && p.status === "sold")
+        ? `<label class="fl-restock-label"><input type="checkbox" class="fl-restock-check" data-code="${p.code}" ${p.needsRestock ? "checked" : ""}/> Needs restock</label>`
+        : "";
+      const controls = isSingle ? `
+          <div style="display:flex; flex-wrap:wrap; gap:6px; align-items:center;">
+            ${quickAction}
+            <select class="fl-status-select" data-code="${p.code}">
+              <option value="available" ${p.status === "available" ? "selected" : ""}>Available</option>
+              <option value="reserved" ${p.status === "reserved" ? "selected" : ""}>Booked</option>
+              <option value="sold" ${p.status === "sold" ? "selected" : ""}>Sold</option>
+            </select>
+            <input class="fl-name-input" data-code="${p.code}" placeholder="Booked by" value="${escapeHtml(p.reservedBy || "")}" style="width:96px;"/>
+          </div>
+          ${restockToggle}
+        ` : `<span style="color:#9a988e; font-size:12px;">unlimited stock</span>`;
+
+      return `
+        <tr>
+          <td><input type="checkbox" class="fl-row-check" data-code="${p.code}" ${state.selectedCodes.includes(p.code) ? "checked" : ""}/></td>
+          <td>${escapeHtml(p.code)}</td>
+          <td>${escapeHtml(p.name)}<div style="color:#9a988e;font-size:11px;">${escapeHtml(p.section)} / ${escapeHtml(p.category)}</div></td>
+          <td>${p.price ? "₹" + p.price : "TBD"}</td>
+          <td>${badge}</td>
+          <td>${controls}${p.reservedAt ? `<div style="color:#9a988e;font-size:11px;margin-top:3px;">${escapeHtml(p.reservedAt)}</div>` : ""}</td>
+          <td class="fl-row-actions">
+            <button data-edit="${p.code}">Edit</button>
+            <button data-duplicate="${p.code}">Duplicate</button>
+            <button data-delete="${p.code}">Delete</button>
+          </td>
+        </tr>`;
+    }).join("");
+
+    const modal = state.showProductModal ? renderProductModal() : "";
+
+    const bulkBar = state.selectedCodes.length > 0 ? `
+        <div class="fl-bulk-bar">
+          <span>${state.selectedCodes.length} selected</span>
+          <button id="fl-bulk-available">Mark available</button>
+          <button id="fl-bulk-sold">Mark sold</button>
+          <button id="fl-bulk-clear">Clear selection</button>
+        </div>` : "";
+
+    const stockToolbar = `
+        <div class="fl-stock-toolbar">
+          <input id="fl-stock-search" type="text" placeholder="Search by name or code..." value="${escapeHtml(state.stockSearch)}"/>
+          <select id="fl-stock-filter">
+            <option value="all" ${state.stockStatusFilter === "all" ? "selected" : ""}>All statuses</option>
+            <option value="available" ${state.stockStatusFilter === "available" ? "selected" : ""}>Available</option>
+            <option value="reserved" ${state.stockStatusFilter === "reserved" ? "selected" : ""}>Booked</option>
+            <option value="sold" ${state.stockStatusFilter === "sold" ? "selected" : ""}>Sold</option>
+            <option value="mto" ${state.stockStatusFilter === "mto" ? "selected" : ""}>Made to order</option>
+          </select>
+          <button class="fl-btn secondary" id="fl-stock-refresh">Refresh</button>
+          <span class="fl-sync-note">${timeAgo(state.lastSyncedAt)}</span>
+        </div>
+        ${bulkBar}
+      `;
+
+    const stockPanel = `
+        ${stockToolbar}
+        <table class="fl-table">
+          <thead><tr><th><input type="checkbox" id="fl-select-all"/></th><th>Code</th><th>Product</th><th>Price</th><th>Type</th><th>Status / who</th><th></th></tr></thead>
+          <tbody>${rows || `<tr><td colspan="7" style="color:#9a988e;text-align:center;padding:22px;">No products match your search.</td></tr>`}</tbody>
+        </table>`;
+    const logPanel = renderEnquiryLog();
+
+    return `
+      <div class="fl-team-wrap">
+        <div class="fl-team-bar">
+          <h2>Flayora — Team desk</h2>
+          <div>
+            <button class="fl-btn secondary" id="fl-back-shop">Back to shop</button>
+            ${state.teamTab === "stock" ? `<button class="fl-btn" id="fl-add-product">+ Add product</button>` : ""}
+          </div>
+        </div>
+        <div class="fl-tabs" style="margin-bottom:18px;">
+          <button class="fl-tab ${state.teamTab === "stock" ? "active" : ""}" data-teamtab="stock">Stock</button>
+          <button class="fl-tab ${state.teamTab === "log" ? "active" : ""}" data-teamtab="log">Enquiry log</button>
+        </div>
+        ${state.teamTab === "stock" ? stockPanel : logPanel}
+      </div>
+      ${modal}
+    `;
+  }
+
+  function renderEnquiryLog() {
+    const counts = {};
+    state.analytics.enquiries.forEach(e => { counts[e.code] = (counts[e.code] || 0) + 1; });
+    const countRows = state.products
+      .map(p => ({ p, n: counts[p.code] || 0 }))
+      .sort((a, b) => b.n - a.n)
+      .map(({ p, n }) => `<tr><td>${escapeHtml(p.code)}</td><td>${escapeHtml(p.name)}</td><td>${n}</td></tr>`)
+      .join("");
+    const recentRows = state.analytics.enquiries.slice(0, 30)
+      .map(e => `<tr><td>${escapeHtml(e.time)}</td><td>${escapeHtml(e.code)}</td><td>${escapeHtml(e.name)}</td></tr>`)
+      .join("");
+
+    return `
+      <div style="display:flex; gap:14px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
+        <div style="background:#fff; border:1px solid var(--line); border-radius:4px; padding:14px 20px;">
+          <div style="font-size:12px; color:#9a988e;">Site visits (all-time)</div>
+          <div style="font-family:'Fraunces',serif; font-size:26px; color:var(--ink);">${state.analytics.visits}</div>
+        </div>
+        <div style="background:#fff; border:1px solid var(--line); border-radius:4px; padding:14px 20px;">
+          <div style="font-size:12px; color:#9a988e;">Total enquiries</div>
+          <div style="font-family:'Fraunces',serif; font-size:26px; color:var(--ink);">${state.analytics.enquiries.length}</div>
+        </div>
+        <button class="fl-btn secondary" id="fl-export-csv" style="margin-left:auto;">Export enquiries as CSV</button>
+      </div>
+      <h3 style="font-size:15px; margin-bottom:8px;">Enquiries by product</h3>
+      <table class="fl-table" style="margin-bottom:26px;">
+        <thead><tr><th>Code</th><th>Product</th><th>Enquiries</th></tr></thead>
+        <tbody>${countRows}</tbody>
+      </table>
+      <h3 style="font-size:15px; margin-bottom:8px;">Recent activity</h3>
+      <table class="fl-table">
+        <thead><tr><th>When</th><th>Code</th><th>Product</th></tr></thead>
+        <tbody>${recentRows || `<tr><td colspan="3" style="color:#9a988e;">No enquiries logged yet.</td></tr>`}</tbody>
+      </table>
+    `;
+  }
+
+  function renderProductModal() {
+    const editing = state.editingCode ? state.products.find(p => p.code === state.editingCode) : null;
+    const defaults = editing || state.duplicateSource || null;
+    if (state.showProductModal && state.pendingIcon === "gift" && defaults && defaults.icon) state.pendingIcon = defaults.icon;
+    const sections = [...new Set(state.products.map(p => p.section))];
+    const cats = [...new Set(state.products.map(p => p.category))];
+    const iconOptions = Object.keys(ICONS).map(k => `
+      <button type="button" class="fl-icon-opt ${state.pendingIcon === k ? "selected" : ""}" data-icon="${k}" title="${ICON_LABELS[k]}">${ICONS[k]}</button>
+    `).join("");
+
+    return `
+      <div class="fl-modal-bg">
+        <div class="fl-modal" style="width:400px;">
+          <h3>${editing ? "Edit product" : (state.duplicateSource ? "Add product (copied)" : "Add product")}</h3>
+          <div class="fl-form-grid">
+            <div><label>Code</label><input id="pf-code" value="${editing ? escapeHtml(editing.code) : ""}" placeholder="FL-501" ${editing ? "disabled" : ""}/></div>
+            <div><label>Price (₹, blank = ask)</label><input id="pf-price" type="number" value="${defaults && defaults.price ? defaults.price : ""}"/></div>
+          </div>
+          <label>Name</label>
+          <input id="pf-name" value="${defaults ? escapeHtml(defaults.name) : ""}" placeholder="Product name"/>
+          <div class="fl-form-grid">
+            <div><label>Section</label><input id="pf-section" list="pf-section-list" value="${defaults ? escapeHtml(defaults.section) : ""}" placeholder="e.g. Gifts & Personalized Items"/></div>
+            <div><label>Category</label><input id="pf-category" list="pf-cat-list" value="${defaults ? escapeHtml(defaults.category) : ""}" placeholder="e.g. Mugs"/></div>
+          </div>
+          <datalist id="pf-section-list">${sections.map(s => `<option value="${escapeHtml(s)}">`).join("")}</datalist>
+          <datalist id="pf-cat-list">${cats.map(c => `<option value="${escapeHtml(c)}">`).join("")}</datalist>
+          <label>Description</label>
+          <textarea id="pf-desc" rows="2">${defaults ? escapeHtml(defaults.desc || "") : ""}</textarea>
+          <label>Specifications (one per line, e.g. "Material: Ceramic")</label>
+          <textarea id="pf-specs" rows="3" placeholder="Material: Ceramic
+Size: 325ml
+Color options: White, Black, Red">${defaults ? escapeHtml(defaults.specs || "") : ""}</textarea>
+          <label>Product photos (up to 3 — first one is the main photo)</label>
+          <div style="font-size:11px;color:#9a988e;margin-bottom:6px;">JPG or PNG, up to 2MB each.</div>
+          ${[0, 1, 2].map(i => {
+            const existing = (editing && (state.imageCache[editing.code] || [])[i]) || null;
+            const removed = pendingRemoveSlots.has(i);
+            const previewUrl = pendingUploadDataUrls[i] || (!removed ? existing : null);
+            return `
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                <div style="width:56px;height:56px;border:1px solid var(--line);border-radius:4px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#faf8f3;">
+                  ${previewUrl ? `<img src="${previewUrl}" style="width:100%;height:100%;object-fit:cover;"/>` : `<span style="font-size:9px;color:#9a988e;">Empty</span>`}
+                </div>
+                <div style="flex:1;">
+                  <input type="file" class="pf-image-file" data-slot="${i}" accept="image/jpeg,image/png,.jpg,.jpeg,.png" style="margin-bottom:0;"/>
+                </div>
+                ${previewUrl ? `<button type="button" class="pf-remove-photo" data-slot="${i}" style="font-size:11px;color:var(--red);background:none;border:none;">Remove</button>` : ""}
+              </div>`;
+          }).join("")}
+          <label>...or paste a main image URL instead (optional)</label>
+          <input id="pf-image" value="${defaults && defaults.image ? escapeHtml(defaults.image) : ""}" placeholder="https://..."/>
+          <label>Icon</label>
+          <div class="fl-icon-picker">${iconOptions}</div>
+          <label>Stock type</label>
+          <select id="pf-stocktype">
+            <option value="mto" ${defaults && defaults.stockType === "mto" ? "selected" : ""}>Made to order (unlimited)</option>
+            <option value="single" ${defaults && defaults.stockType === "single" ? "selected" : ""}>Single piece (limited)</option>
+          </select>
+          <div id="pf-error" class="fl-error">${escapeHtml(state.productModalError || "")}</div>
+          <div class="fl-modal-actions">
+            <button class="fl-btn" id="pf-save">${editing ? "Save changes" : "Add product"}</button>
+            <button class="fl-btn secondary" id="pf-cancel">Cancel</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function attachEvents() {
+    const heroEl = document.getElementById("fl-hero");
+    if (heroEl) {
+      const prev = document.getElementById("fl-hero-prev");
+      const next = document.getElementById("fl-hero-next");
+      if (prev) prev.onclick = () => goToHeroSlide(heroIndex - 1);
+      if (next) next.onclick = () => goToHeroSlide(heroIndex + 1);
+      document.querySelectorAll(".fl-hero-dot").forEach(d => {
+        d.onclick = () => goToHeroSlide(parseInt(d.dataset.slide, 10));
+      });
+      startHeroAutoplay();
+    } else {
+      clearInterval(heroTimer);
+    }
+
+    const openTeam = document.getElementById("fl-open-team");
+    if (openTeam) openTeam.onclick = () => { state.view = "team"; render(); };
+
+    document.querySelectorAll("[data-section]").forEach(btn => {
+      btn.onclick = () => { state.activeSection = btn.dataset.section; state.activeCategory = "All"; render(); };
+    });
+    document.querySelectorAll(".fl-tab[data-cat]").forEach(btn => {
+      btn.onclick = () => { state.activeCategory = btn.dataset.cat; render(); };
+    });
+    document.querySelectorAll("[data-enquire-code]").forEach(a => {
+      a.addEventListener("click", () => { logEnquiry(a.dataset.enquireCode, a.dataset.enquireName); });
+    });
+
+    document.querySelectorAll(".fl-card[data-detail]").forEach(card => {
+      card.onclick = (e) => {
+        if (e.target.closest(".fl-enquire")) return;
+        state.viewingProduct = card.dataset.detail;
+        state.detailImageIndex = 0;
+        render();
+      };
+    });
+    const detailBg = document.getElementById("fl-detail-bg");
+    if (detailBg) detailBg.onclick = (e) => {
+      if (e.target === detailBg) { state.viewingProduct = null; render(); }
+    };
+    const detailClose = document.getElementById("fl-detail-close");
+    if (detailClose) detailClose.onclick = () => { state.viewingProduct = null; render(); };
+    const detailPrev = document.getElementById("fl-detail-prev");
+    if (detailPrev) detailPrev.onclick = (e) => {
+      e.stopPropagation();
+      const p = state.products.find(p => p.code === state.viewingProduct);
+      const images = (p && (state.imageCache[p.code] || []).filter(Boolean)) || [];
+      const n = images.length || 1;
+      state.detailImageIndex = (state.detailImageIndex - 1 + n) % n;
+      render();
+    };
+    const detailNext = document.getElementById("fl-detail-next");
+    if (detailNext) detailNext.onclick = (e) => {
+      e.stopPropagation();
+      const p = state.products.find(p => p.code === state.viewingProduct);
+      const images = (p && (state.imageCache[p.code] || []).filter(Boolean)) || [];
+      const n = images.length || 1;
+      state.detailImageIndex = (state.detailImageIndex + 1) % n;
+      render();
+    };
+    document.querySelectorAll(".fl-detail-thumb").forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        state.detailImageIndex = parseInt(btn.dataset.thumb, 10);
+        render();
+      };
+    });
+
+    const pinSubmit = document.getElementById("fl-pin-submit");
+    if (pinSubmit) pinSubmit.onclick = async () => {
+      const pin = document.getElementById("fl-pin-input").value;
+      if (pin !== TEAM_PIN) {
+        state.pinError = "Wrong Team PIN, try again.";
+        render();
+        return;
+      }
+      state.teamUnlocked = true;
+      state.pinError = "";
+      await pollCatalog(true).catch(() => {});
+      render();
+    };
+    const pinCancel = document.getElementById("fl-pin-cancel");
+    if (pinCancel) pinCancel.onclick = () => { state.view = "shop"; state.pinError = ""; render(); };
+
+    const backShop = document.getElementById("fl-back-shop");
+    if (backShop) backShop.onclick = async () => {
+      state.view = "shop";
+      state.teamUnlocked = false;
+      render();
+    };
+
+    document.querySelectorAll("[data-teamtab]").forEach(btn => {
+      btn.onclick = () => { state.teamTab = btn.dataset.teamtab; render(); };
+    });
+
+    const addBtn = document.getElementById("fl-add-product");
+    if (addBtn) addBtn.onclick = () => { state.editingCode = null; state.duplicateSource = null; state.pendingIcon = "gift"; pendingUploadDataUrl = null; pendingUploadDataUrls = [null, null, null]; pendingRemoveSlots = new Set(); state.productModalError = ""; state.showProductModal = true; render(); };
+
+    document.querySelectorAll("[data-edit]").forEach(btn => {
+      btn.onclick = () => {
+        state.editingCode = btn.dataset.edit;
+        state.duplicateSource = null;
+        const p = state.products.find(p => p.code === btn.dataset.edit);
+        state.pendingIcon = p ? p.icon : "gift";
+        pendingUploadDataUrl = null;
+        pendingUploadDataUrls = [null, null, null];
+        pendingRemoveSlots = new Set();
+        state.productModalError = "";
+        state.showProductModal = true;
+        render();
+      };
+    });
+    document.querySelectorAll("[data-duplicate]").forEach(btn => {
+      btn.onclick = () => {
+        const p = state.products.find(p => p.code === btn.dataset.duplicate);
+        state.editingCode = null;
+        state.duplicateSource = p || null;
+        state.pendingIcon = p ? p.icon : "gift";
+        pendingUploadDataUrl = null;
+        pendingUploadDataUrls = [null, null, null];
+        pendingRemoveSlots = new Set();
+        state.productModalError = "";
+        state.showProductModal = true;
+        render();
+      };
+    });
+    document.querySelectorAll("[data-delete]").forEach(btn => {
+      btn.onclick = async () => {
+        if (!confirm("Delete this product?")) return;
+        await deleteImage(btn.dataset.delete);
+        state.products = state.products.filter(p => p.code !== btn.dataset.delete);
+        state.selectedCodes = state.selectedCodes.filter(c => c !== btn.dataset.delete);
+        await saveCatalog();
+        render();
+      };
+    });
+
+    document.querySelectorAll("[data-book]").forEach(btn => {
+      btn.onclick = async () => {
+        const p = state.products.find(p => p.code === btn.dataset.book);
+        if (!p) return;
+        const name = window.prompt("Who's booking this? (name)", "");
+        if (name === null) return;
+        p.status = "reserved";
+        p.reservedBy = name.trim();
+        p.reservedAt = new Date().toLocaleString();
+        await saveCatalog();
+        render();
+      };
+    });
+    document.querySelectorAll("[data-release]").forEach(btn => {
+      btn.onclick = async () => {
+        const p = state.products.find(p => p.code === btn.dataset.release);
+        if (!p) return;
+        p.status = "available";
+        p.reservedBy = "";
+        p.reservedAt = "";
+        p.needsRestock = false;
+        await saveCatalog();
+        render();
+      };
+    });
+    document.querySelectorAll(".fl-restock-check").forEach(cb => {
+      cb.onchange = async () => {
+        const p = state.products.find(p => p.code === cb.dataset.code);
+        if (!p) return;
+        p.needsRestock = cb.checked;
+        await saveCatalog();
+      };
+    });
+
+    document.querySelectorAll(".fl-row-check").forEach(cb => {
+      cb.onchange = () => {
+        const code = cb.dataset.code;
+        if (cb.checked) { if (!state.selectedCodes.includes(code)) state.selectedCodes.push(code); }
+        else { state.selectedCodes = state.selectedCodes.filter(c => c !== code); }
+        render();
+      };
+    });
+    const selectAll = document.getElementById("fl-select-all");
+    if (selectAll) selectAll.onchange = () => {
+      const visibleCodes = Array.from(document.querySelectorAll(".fl-row-check")).map(cb => cb.dataset.code);
+      state.selectedCodes = selectAll.checked ? Array.from(new Set([...state.selectedCodes, ...visibleCodes])) : state.selectedCodes.filter(c => !visibleCodes.includes(c));
+      render();
+    };
+    const bulkAvail = document.getElementById("fl-bulk-available");
+    if (bulkAvail) bulkAvail.onclick = async () => {
+      state.products.forEach(p => { if (state.selectedCodes.includes(p.code)) { p.status = "available"; p.reservedBy = ""; p.reservedAt = ""; p.needsRestock = false; } });
+      state.selectedCodes = [];
+      await saveCatalog();
+      render();
+    };
+    const bulkSold = document.getElementById("fl-bulk-sold");
+    if (bulkSold) bulkSold.onclick = async () => {
+      state.products.forEach(p => { if (state.selectedCodes.includes(p.code)) { p.status = "sold"; p.reservedAt = new Date().toLocaleString(); } });
+      state.selectedCodes = [];
+      await saveCatalog();
+      render();
+    };
+    const bulkClear = document.getElementById("fl-bulk-clear");
+    if (bulkClear) bulkClear.onclick = () => { state.selectedCodes = []; render(); };
+
+    const stockSearch = document.getElementById("fl-stock-search");
+    if (stockSearch) stockSearch.oninput = (e) => {
+      const pos = e.target.selectionStart;
+      state.stockSearch = e.target.value;
+      render();
+      const fresh = document.getElementById("fl-stock-search");
+      if (fresh) { fresh.focus(); fresh.setSelectionRange(pos, pos); }
+    };
+    const stockFilter = document.getElementById("fl-stock-filter");
+    if (stockFilter) stockFilter.onchange = () => { state.stockStatusFilter = stockFilter.value; render(); };
+    const stockRefresh = document.getElementById("fl-stock-refresh");
+    if (stockRefresh) stockRefresh.onclick = () => pollCatalog(true);
+
+    const exportCsv = document.getElementById("fl-export-csv");
+    if (exportCsv) exportCsv.onclick = () => exportEnquiriesCSV();
+
+    document.querySelectorAll(".fl-status-select").forEach(sel => {
+      sel.onchange = async () => {
+        const p = state.products.find(p => p.code === sel.dataset.code);
+        p.status = sel.value;
+        p.reservedAt = sel.value === "available" ? "" : new Date().toLocaleString();
+        if (sel.value === "available") p.reservedBy = "";
+        await saveCatalog();
+        render();
+      };
+    });
+    document.querySelectorAll(".fl-name-input").forEach(inp => {
+      inp.onblur = async () => {
+        const p = state.products.find(p => p.code === inp.dataset.code);
+        p.reservedBy = inp.value;
+        await saveCatalog();
+      };
+    });
+
+    document.querySelectorAll(".fl-icon-opt").forEach(btn => {
+      btn.onclick = () => { state.pendingIcon = btn.dataset.icon; render(); };
+    });
+
+    document.querySelectorAll(".pf-image-file").forEach(input => {
+      input.onchange = async () => {
+        const file = input.files[0];
+        if (!file) return;
+        const slot = parseInt(input.dataset.slot, 10);
+        if (!["image/jpeg", "image/png"].includes(file.type)) {
+          state.productModalError = "Please choose a JPG or PNG image.";
+          render();
+          return;
+        }
+        try {
+          pendingUploadDataUrls[slot] = await compressImage(file);
+          pendingRemoveSlots.delete(slot);
+          state.productModalError = "";
+          render();
+        } catch (e) {
+          console.error("Photo processing failed", e);
+          state.productModalError = "Photo processing failed — try a different photo.";
+          render();
+        }
+      };
+    });
+    document.querySelectorAll(".pf-remove-photo").forEach(btn => {
+      btn.onclick = () => {
+        const slot = parseInt(btn.dataset.slot, 10);
+        pendingUploadDataUrls[slot] = null;
+        pendingRemoveSlots.add(slot);
+        render();
+      };
+    });
+
+    const pfSave = document.getElementById("pf-save");
+    if (pfSave) pfSave.onclick = async () => {
+      const code = document.getElementById("pf-code").value.trim();
+      const name = document.getElementById("pf-name").value.trim();
+      const section = document.getElementById("pf-section").value.trim();
+      const category = document.getElementById("pf-category").value.trim();
+      const priceRaw = document.getElementById("pf-price").value;
+      const price = priceRaw ? parseFloat(priceRaw) : 0;
+      const desc = document.getElementById("pf-desc").value.trim();
+      const specs = document.getElementById("pf-specs").value.trim();
+      const image = document.getElementById("pf-image").value.trim();
+      const stockType = document.getElementById("pf-stocktype").value;
+
+      if (!code || !name || !section || !category) {
+        state.productModalError = "Please fill in code, name, section and category.";
+        render();
+        return;
+      }
+      if (!state.editingCode && state.products.some(p => p.code === code)) {
+        state.productModalError = "That code is already in use.";
+        render();
+        return;
+      }
+      // Upload independent photo slots together to reduce waiting time (max 3 images).
+      const photoTasks = [];
+      for (let slot = 0; slot < 3; slot++) {
+        if (pendingUploadDataUrls[slot]) {
+          const dataUrl = pendingUploadDataUrls[slot];
+          photoTasks.push(saveImage(code, slot, dataUrl));
+        } else if (pendingRemoveSlots.has(slot) && state.editingCode) {
+          photoTasks.push(deleteImageSlot(code, slot));
+        }
+      }
+      const photoResults = await Promise.allSettled(photoTasks);
+      const photoFailed = photoResults.some(result => result.status === "rejected");
+      photoResults.forEach(result => {
+        if (result.status === "rejected") console.error("Product photo save failed", result.reason);
+      });
+      if (state.editingCode) {
+        const p = state.products.find(p => p.code === state.editingCode);
+        Object.assign(p, { name, section, category, price, desc, specs, image, stockType, icon: state.pendingIcon });
+      } else {
+        state.products.push({ code, name, section, category, price, desc, specs, image, stockType, icon: state.pendingIcon, status: "available", reservedBy: "", reservedAt: "", needsRestock: false });
+      }
+      await saveCatalog();
+      if (photoFailed) {
+        state.productModalError = "Other changes were saved, but one photo didn't upload (connection or size issue). Try that photo again.";
+        render();
+        return;
+      }
+      state.showProductModal = false;
+      state.editingCode = null;
+      state.duplicateSource = null;
+      state.productModalError = "";
+      pendingUploadDataUrl = null;
+      pendingUploadDataUrls = [null, null, null];
+      pendingRemoveSlots = new Set();
+      render();
+    };
+    const pfCancel = document.getElementById("pf-cancel");
+    if (pfCancel) pfCancel.onclick = () => { state.showProductModal = false; state.editingCode = null; state.duplicateSource = null; state.productModalError = ""; render(); };
+  }
+
+  loadCatalog();
+})();
+</script>
+</body>
+</html>
