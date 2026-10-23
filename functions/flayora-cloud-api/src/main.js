@@ -1,6 +1,6 @@
 import { Client, TablesDB, Storage, Query, ID } from "node-appwrite";
 import { InputFile } from "node-appwrite/file";
-import { createHash } from "node:crypto";
+import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 const client = new Client()
   .setEndpoint(process.env.APPWRITE_ENDPOINT)
@@ -23,7 +23,7 @@ export default async ({ req, res, log, error }) => {
   const headers = {
     "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, X-Flayora-Pin",
+    "Access-Control-Allow-Headers": "Content-Type, X-Flayora-Session",
     "Vary": "Origin"
   };
 
@@ -43,15 +43,44 @@ export default async ({ req, res, log, error }) => {
     const body = req.bodyJson || {};
     const action = body.action;
     const key = typeof body.key === "string" ? body.key : "";
-    if (action !== "list" && (key.length < 1 || key.length > 255)) {
+    if (!["list", "auth"].includes(action) && (key.length < 1 || key.length > 255)) {
       return res.json({ error: "Invalid key" }, 400, headers);
     }
 
+    const verifySession = (token) => {
+      if (typeof token !== "string" || token.length > 512) return false;
+      const parts = token.split(".");
+      if (parts.length !== 3) return false;
+      const [expiryText, nonce, signature] = parts;
+      const expiry = Number(expiryText);
+      if (!Number.isFinite(expiry) || expiry <= Date.now() || expiry > Date.now() + 12 * 60 * 60 * 1000) return false;
+      if (!/^[a-f0-9]{32}$/.test(nonce) || !/^[a-f0-9]{64}$/.test(signature)) return false;
+      const payload = expiryText + "." + nonce;
+      const expected = createHmac("sha256", process.env.FLAYORA_TEAM_PIN).update(payload).digest("hex");
+      const providedBuffer = Buffer.from(signature, "hex");
+      const expectedBuffer = Buffer.from(expected, "hex");
+      return providedBuffer.length === expectedBuffer.length && timingSafeEqual(providedBuffer, expectedBuffer);
+    };
+
+    if (action === "auth") {
+      const supplied = typeof body.pin === "string" ? body.pin : "";
+      const expected = process.env.FLAYORA_TEAM_PIN || "";
+      const suppliedBuffer = Buffer.from(supplied);
+      const expectedBuffer = Buffer.from(expected);
+      const pinMatches = suppliedBuffer.length === expectedBuffer.length &&
+        timingSafeEqual(suppliedBuffer, expectedBuffer);
+      if (!pinMatches) return res.json({ error: "Invalid Team PIN" }, 401, headers);
+      const expiry = String(Date.now() + 8 * 60 * 60 * 1000);
+      const nonce = randomBytes(16).toString("hex");
+      const payload = expiry + "." + nonce;
+      const signature = createHmac("sha256", expected).update(payload).digest("hex");
+      return res.json({ ok: true, token: payload + "." + signature, expiresAt: Number(expiry) }, 200, headers);
+    }
+
     if (["set", "delete"].includes(action)) {
-      const supplied = req.headers["x-flayora-pin"] || "";
-      const expected = process.env.FLAYORA_TEAM_PIN;
-      if (supplied.length !== expected.length || supplied !== expected) {
-        return res.json({ error: "Unauthorized" }, 401, headers);
+      const supplied = req.headers["x-flayora-session"] || "";
+      if (!verifySession(supplied)) {
+        return res.json({ error: "Unauthorized or expired Team Desk session" }, 401, headers);
       }
     }
 
@@ -105,53 +134,6 @@ export default async ({ req, res, log, error }) => {
 
     const getImageFileId = (imageKey) =>
       createHash("sha256").update(imageKey).digest("hex").slice(0, 32);
-
-    // Temporary, fixed-key deployment diagnostic. It cannot read or modify catalogue records.
-    if (action === "probe" && key === "__flayora-probe__") {
-      const probeValue = "P".repeat(9000);
-      const pieces = [];
-      for (let i = 0; i < probeValue.length; i += MAX_ROW_VALUE) {
-        pieces.push(probeValue.slice(i, i + MAX_ROW_VALUE));
-      }
-      for (let i = 0; i < pieces.length; i++) {
-        await putRow(key + ":__chunk:" + i, pieces[i]);
-      }
-      await putRow(key, JSON.stringify({ [CHUNK_MARKER]: pieces.length }));
-      const markerRows = await findRows(key);
-      const marker = markerRows.length ? JSON.parse(markerRows[0].value) : {};
-      const readPieces = await Promise.all(Array.from(
-        { length: marker[CHUNK_MARKER] || 0 },
-        (_, i) => findRows(key + ":__chunk:" + i)
-      ));
-      const reconstructed = readPieces.map(rows => rows[0]?.value || "").join("");
-      const tableVerified = reconstructed === probeValue;
-
-      let storageVerified = false;
-      const fileId = "flayora-probe-file";
-      try {
-        await storage.createFile({
-          bucketId: BUCKET_ID,
-          fileId,
-          file: InputFile.fromBuffer(Buffer.from("Flayora storage diagnostic"), "flayora-probe.txt", "text/plain")
-        });
-        const file = await storage.getFile({ bucketId: BUCKET_ID, fileId });
-        storageVerified = file.$id === fileId;
-      } finally {
-        try { await storage.deleteFile({ bucketId: BUCKET_ID, fileId }); } catch (_) {}
-      }
-
-      const cleanupRows = (await listRows()).filter(row =>
-        row.key === key || (typeof row.key === "string" && row.key.startsWith(key + ":__chunk:"))
-      );
-      await Promise.all(cleanupRows.map(row => tables.deleteRow({
-        databaseId: DATABASE_ID, tableId: TABLE_ID, rowId: row.$id
-      })));
-      return res.json({
-        ok: tableVerified && storageVerified,
-        tableWriteReadChunkDelete: tableVerified,
-        bucketCreateReadDelete: storageVerified
-      }, tableVerified && storageVerified ? 200 : 500, headers);
-    }
 
     if (action === "list") {
       const prefix = typeof body.prefix === "string" ? body.prefix : "";
