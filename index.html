@@ -500,12 +500,14 @@
   };
 
   const CLOUD_API = "https://flayora.sgp.appwrite.run";
-  // Must match the current Team Desk PIN configured for the server function.
-  const CLOUD_WRITE_PIN = "puri-92-fl";
+  let CLOUD_WRITE_SESSION = "";
 
   async function cloudCall(action, payload = {}, write = false) {
     const headers = { "Content-Type": "application/json" };
-    if (write) headers["X-Flayora-Pin"] = CLOUD_WRITE_PIN;
+    if (write) {
+      if (!CLOUD_WRITE_SESSION) throw new Error("Unlock Team Desk before saving cloud changes.");
+      headers["X-Flayora-Session"] = CLOUD_WRITE_SESSION;
+    }
     const response = await fetch(CLOUD_API, {
       method: "POST",
       headers,
@@ -522,6 +524,15 @@
   }
 
   window.storage = {
+    async authenticate(pin) {
+      const result = await cloudCall("auth", { pin });
+      if (!result || !result.token) throw new Error("Team Desk authentication failed.");
+      CLOUD_WRITE_SESSION = result.token;
+      return true;
+    },
+    async logout() {
+      CLOUD_WRITE_SESSION = "";
+    },
     async get(key) {
       const normalizedKey = String(key);
       try {
@@ -586,7 +597,7 @@
   const WHATSAPP_NUMBER = "917735565477"; // India country code assumed
   // Change this to something private only your team knows — avoid your shop name,
   // since anyone who views the page source could otherwise guess it easily.
-  const TEAM_PIN = "puri-92-fl"; // Team Desk PIN gate.
+  // Team Desk PIN is verified by the server; do not store it in public page code.
   const STORAGE_KEY = "flayora-catalog";
   const ANALYTICS_KEY = "flayora-analytics";
   const ACCENTS = ["#E8A93A", "#D64545", "#6E8B6E", "#7C6FA6"];
@@ -1367,15 +1378,22 @@ Color options: White, Black, Red">${defaults ? escapeHtml(defaults.specs || "") 
     const pinSubmit = document.getElementById("fl-pin-submit");
     if (pinSubmit) pinSubmit.onclick = async () => {
       const pin = document.getElementById("fl-pin-input").value;
-      if (pin !== TEAM_PIN) {
-        state.pinError = "Wrong Team PIN, try again.";
+      pinSubmit.disabled = true;
+      pinSubmit.textContent = "Checking…";
+      try {
+        await window.storage.authenticate(pin);
+        state.teamUnlocked = true;
+        state.pinError = "";
+        await loadImages();
+        await pollCatalog(true);
         render();
-        return;
+      } catch (e) {
+        state.teamUnlocked = false;
+        state.pinError = String(e && e.message || "").includes("401")
+          ? "Wrong Team PIN, try again."
+          : "Could not connect to Team Desk. Check your connection and try again.";
+        render();
       }
-      state.teamUnlocked = true;
-      state.pinError = "";
-      await pollCatalog(true).catch(() => {});
-      render();
     };
     const pinCancel = document.getElementById("fl-pin-cancel");
     if (pinCancel) pinCancel.onclick = () => { state.view = "shop"; state.pinError = ""; render(); };
@@ -1384,6 +1402,7 @@ Color options: White, Black, Red">${defaults ? escapeHtml(defaults.specs || "") 
     if (backShop) backShop.onclick = async () => {
       state.view = "shop";
       state.teamUnlocked = false;
+      await window.storage.logout();
       render();
     };
 
