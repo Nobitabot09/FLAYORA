@@ -192,6 +192,15 @@
     display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
     gap: 22px; padding: 28px 24px;
   }
+
+  /* Keep two product cards per row on Android/mobile screens. */
+  @media (max-width: 560px) {
+    .fl-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      padding: 18px 12px;
+    }
+  }
   .fl-card {
     background: #fff; border: 1px solid var(--line); border-radius: 6px;
     position: relative; overflow: hidden; cursor: pointer;
