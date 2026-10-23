@@ -108,16 +108,49 @@ export default async ({ req, res, log, error }) => {
 
     // Temporary, fixed-key deployment diagnostic. It cannot read or modify catalogue records.
     if (action === "probe" && key === "__flayora-probe__") {
-      const probeValue = "probe-" + Date.now();
-      await putRow(key, probeValue);
-      const verifiedRows = await findRows(key);
-      const verified = verifiedRows.length === 1 && verifiedRows[0].value === probeValue;
-      await removeRow(key);
+      const probeValue = "P".repeat(9000);
+      const pieces = [];
+      for (let i = 0; i < probeValue.length; i += MAX_ROW_VALUE) {
+        pieces.push(probeValue.slice(i, i + MAX_ROW_VALUE));
+      }
+      for (let i = 0; i < pieces.length; i++) {
+        await putRow(key + ":__chunk:" + i, pieces[i]);
+      }
+      await putRow(key, JSON.stringify({ [CHUNK_MARKER]: pieces.length }));
+      const markerRows = await findRows(key);
+      const marker = markerRows.length ? JSON.parse(markerRows[0].value) : {};
+      const readPieces = await Promise.all(Array.from(
+        { length: marker[CHUNK_MARKER] || 0 },
+        (_, i) => findRows(key + ":__chunk:" + i)
+      ));
+      const reconstructed = readPieces.map(rows => rows[0]?.value || "").join("");
+      const tableVerified = reconstructed === probeValue;
+
+      let storageVerified = false;
+      const fileId = "flayora-probe-file";
+      try {
+        await storage.createFile({
+          bucketId: BUCKET_ID,
+          fileId,
+          file: InputFile.fromBuffer(Buffer.from("Flayora storage diagnostic"), "flayora-probe.txt", "text/plain")
+        });
+        const file = await storage.getFile({ bucketId: BUCKET_ID, fileId });
+        storageVerified = file.$id === fileId;
+      } finally {
+        try { await storage.deleteFile({ bucketId: BUCKET_ID, fileId }); } catch (_) {}
+      }
+
+      const cleanupRows = (await listRows()).filter(row =>
+        row.key === key || (typeof row.key === "string" && row.key.startsWith(key + ":__chunk:"))
+      );
+      await Promise.all(cleanupRows.map(row => tables.deleteRow({
+        databaseId: DATABASE_ID, tableId: TABLE_ID, rowId: row.$id
+      })));
       return res.json({
-        ok: verified,
-        tableWriteReadDelete: verified,
-        note: verified ? "Appwrite table write/read/delete succeeded" : "Appwrite table verification failed"
-      }, verified ? 200 : 500, headers);
+        ok: tableVerified && storageVerified,
+        tableWriteReadChunkDelete: tableVerified,
+        bucketCreateReadDelete: storageVerified
+      }, tableVerified && storageVerified ? 200 : 500, headers);
     }
 
     if (action === "list") {
