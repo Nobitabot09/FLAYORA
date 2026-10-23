@@ -4,7 +4,7 @@ import { Client, TablesDB, Query, ID } from "node-appwrite";
 const client = new Client()
   .setEndpoint(process.env.APPWRITE_ENDPOINT)
   .setProject(process.env.APPWRITE_PROJECT_ID)
-  .setKey(process.env.APPWRITE_API_KEY);
+  .setKey(process.env.APPWRITE_FUNCTION_API_KEY || process.env.APPWRITE_API_KEY);
 
 const tables = new TablesDB(client);
 
@@ -31,7 +31,7 @@ export default async ({ req, res, log, error }) => {
   }
 
   try {
-    if (!process.env.APPWRITE_API_KEY ||
+    if (!(process.env.APPWRITE_FUNCTION_API_KEY || process.env.APPWRITE_API_KEY) ||
         !process.env.APPWRITE_PROJECT_ID ||
         !process.env.APPWRITE_ENDPOINT ||
         !DATABASE_ID ||
