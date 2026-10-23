@@ -106,6 +106,20 @@ export default async ({ req, res, log, error }) => {
     const getImageFileId = (imageKey) =>
       createHash("sha256").update(imageKey).digest("hex").slice(0, 32);
 
+    // Temporary, fixed-key deployment diagnostic. It cannot read or modify catalogue records.
+    if (action === "probe" && key === "__flayora-probe__") {
+      const probeValue = "probe-" + Date.now();
+      await putRow(key, probeValue);
+      const verifiedRows = await findRows(key);
+      const verified = verifiedRows.length === 1 && verifiedRows[0].value === probeValue;
+      await removeRow(key);
+      return res.json({
+        ok: verified,
+        tableWriteReadDelete: verified,
+        note: verified ? "Appwrite table write/read/delete succeeded" : "Appwrite table verification failed"
+      }, verified ? 200 : 500, headers);
+    }
+
     if (action === "list") {
       const prefix = typeof body.prefix === "string" ? body.prefix : "";
       const rows = await listRows();
