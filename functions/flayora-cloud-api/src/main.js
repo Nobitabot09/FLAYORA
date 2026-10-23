@@ -119,7 +119,7 @@ export default async ({ req, res, log, error }) => {
 
     return res.json({ error: "Unsupported action" }, 400, headers);
   } catch (e) {
-    error(String(e));
+    error("Cloud operation failed: " + String(e)); error("Cause: " + String(e?.cause?.message || e?.cause || "No underlying cause provided"));
     return res.json({ error: "Cloud operation failed" }, 500, headers);
   }
 };
