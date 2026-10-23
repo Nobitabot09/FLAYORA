@@ -88,11 +88,19 @@ export default async ({ req, res, log, error }) => {
     };
 
     const listRows = async () => {
-      const result = await tables.listRows({
-        databaseId: DATABASE_ID, tableId: TABLE_ID,
-        total: false, limit: 500
-      });
-      return result.rows || [];
+      const all = [];
+      let offset = 0;
+      for (let pageNumber = 0; pageNumber < 20; pageNumber++) {
+        const result = await tables.listRows({
+          databaseId: DATABASE_ID, tableId: TABLE_ID,
+          total: false, limit: 500, offset
+        });
+        const page = result.rows || [];
+        all.push(...page);
+        if (page.length < 500) break;
+        offset += page.length;
+      }
+      return all;
     };
 
     const getImageFileId = (imageKey) =>
