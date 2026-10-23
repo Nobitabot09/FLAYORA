@@ -427,7 +427,7 @@
 <body>
 <div id="flayora-root"></div>
 
-<!-- Local-first storage adapter (IndexedDB). No Appwrite account is required in this build. -->
+<!-- Appwrite cloud storage adapter with IndexedDB cache and migration of earlier local records. -->
 <script>
 (() => {
   const DB_NAME = "flayora-local-v1";
@@ -470,7 +470,7 @@
       }
     });
   }
-  window.storage = {
+  const localAdapter = {
     async get(key) {
       const normalizedKey = String(key);
       const row = await requestResult("readonly", store => store.get(normalizedKey));
@@ -498,6 +498,87 @@
       return { keys, prefix: prefix || "", shared: false, storageMode: "local" };
     }
   };
+
+  const CLOUD_API = "https://flayora.sgp.appwrite.run";
+  // Must match the current Team Desk PIN configured for the server function.
+  const CLOUD_WRITE_PIN = "puri-92-fl";
+
+  async function cloudCall(action, payload = {}, write = false) {
+    const headers = { "Content-Type": "application/json" };
+    if (write) headers["X-Flayora-Pin"] = CLOUD_WRITE_PIN;
+    const response = await fetch(CLOUD_API, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ action, ...payload })
+    });
+    const raw = await response.text();
+    let result = {};
+    try { result = raw ? JSON.parse(raw) : {}; } catch (_) {}
+    if (!response.ok) {
+      throw new Error(result.error || ("Cloud request failed (HTTP " + response.status + ")."));
+    }
+    if (result.error) throw new Error(result.error);
+    return result;
+  }
+
+  window.storage = {
+    async get(key) {
+      const normalizedKey = String(key);
+      try {
+        const remote = await cloudCall("get", { key: normalizedKey });
+        if (remote && remote.value !== null && remote.value !== undefined) {
+          await localAdapter.set(normalizedKey, remote.value).catch(() => {});
+          return { key: normalizedKey, value: remote.value, shared: true, storageMode: "cloud" };
+        }
+        const local = await localAdapter.get(normalizedKey);
+        if (!local) return null;
+        // Migrate legacy browser-only records into Appwrite on first successful contact.
+        try {
+          const saved = await cloudCall("set", { key: normalizedKey, value: local.value }, true);
+          const value = typeof saved.value === "string" ? saved.value : local.value;
+          await localAdapter.set(normalizedKey, value).catch(() => {});
+          return { key: normalizedKey, value, shared: true, storageMode: "cloud" };
+        } catch (migrationError) {
+          console.warn("Legacy local record could not be migrated yet:", normalizedKey, migrationError);
+          return local;
+        }
+      } catch (cloudError) {
+        const local = await localAdapter.get(normalizedKey).catch(() => null);
+        if (local) return local;
+        throw cloudError;
+      }
+    },
+
+    async set(key, value) {
+      const normalizedKey = String(key);
+      const storedValue = typeof value === "string" ? value : JSON.stringify(value);
+      const saved = await cloudCall("set", { key: normalizedKey, value: storedValue }, true);
+      const resolvedValue = typeof saved.value === "string" ? saved.value : storedValue;
+      await localAdapter.set(normalizedKey, resolvedValue).catch(() => {});
+      return { key: normalizedKey, value: resolvedValue, shared: true, storageMode: "cloud" };
+    },
+
+    async delete(key) {
+      const normalizedKey = String(key);
+      await cloudCall("delete", { key: normalizedKey }, true);
+      await localAdapter.delete(normalizedKey).catch(() => {});
+      return { key: normalizedKey, deleted: true, shared: true, storageMode: "cloud" };
+    },
+
+    async list(prefix) {
+      const normalizedPrefix = String(prefix || "");
+      const remote = await cloudCall("list", { prefix: normalizedPrefix });
+      const local = await localAdapter.list(normalizedPrefix).catch(() => ({ keys: [] }));
+      const known = new Set(remote.keys || []);
+      const missing = (local.keys || []).filter(key => !known.has(key));
+      // Keep migration concurrency low to avoid hammering the free database tier.
+      for (let i = 0; i < missing.length; i += 3) {
+        await Promise.allSettled(missing.slice(i, i + 3).map(key => this.get(key)));
+      }
+      const refreshed = missing.length ? await cloudCall("list", { prefix: normalizedPrefix }) : remote;
+      return { keys: [...new Set([...(refreshed.keys || []), ...(local.keys || [])])], prefix: normalizedPrefix, shared: true, storageMode: "cloud" };
+    }
+  };
 })();
 </script>
 <script>
@@ -505,7 +586,7 @@
   const WHATSAPP_NUMBER = "917735565477"; // India country code assumed
   // Change this to something private only your team knows — avoid your shop name,
   // since anyone who views the page source could otherwise guess it easily.
-  const TEAM_PIN = "puri-92-fl"; // Team Desk PIN gate for local preview mode.
+  const TEAM_PIN = "puri-92-fl"; // Team Desk PIN gate.
   const STORAGE_KEY = "flayora-catalog";
   const ANALYTICS_KEY = "flayora-analytics";
   const ACCENTS = ["#E8A93A", "#D64545", "#6E8B6E", "#7C6FA6"];
@@ -998,7 +1079,7 @@
             <h3>Team desk</h3>
             <label>Team PIN</label>
             <input type="password" id="fl-pin-input" placeholder="Enter Team PIN" autocomplete="current-password"/>
-            <div style="font-size:11px;color:#6b6a63;margin:-3px 0 10px;">Local preview mode: changes are saved only in this browser until cloud hosting is configured.</div>
+            <div style="font-size:11px;color:#6b6a63;margin:-3px 0 10px;">Team Desk changes sync through the shared Flayora cloud.</div>
             ${state.pinError ? `<div class="fl-error">${escapeHtml(state.pinError)}</div>` : ""}
             <div class="fl-modal-actions">
               <button class="fl-btn" id="fl-pin-submit">Unlock</button>
