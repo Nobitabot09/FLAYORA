@@ -1427,11 +1427,19 @@ Color options: White, Black, Red">${defaults ? escapeHtml(defaults.specs || "") 
         await pollCatalog(true);
         render();
       } catch (e) {
+        console.error("Team Desk unlock failed:", e);
         state.teamUnlocked = false;
-        state.pinError = String(e && e.message || "").includes("401")
+        const message = String(e && e.message || e || "Unknown error");
+        state.pinError = message.includes("401") || /invalid team pin/i.test(message)
           ? "Wrong Team PIN, try again."
-          : "Could not connect to Team Desk. Check your connection and try again.";
+          : "Team Desk error: " + message;
         render();
+      } finally {
+        const button = document.getElementById("fl-pin-submit");
+        if (button) {
+          button.disabled = false;
+          button.textContent = "Unlock";
+        }
       }
     };
     const pinCancel = document.getElementById("fl-pin-cancel");
