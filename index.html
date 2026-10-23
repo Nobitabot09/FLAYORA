@@ -517,7 +517,7 @@
     let result = {};
     try { result = raw ? JSON.parse(raw) : {}; } catch (_) {}
     if (!response.ok) {
-      throw new Error(result.error || ("Cloud request failed (HTTP " + response.status + ")."));
+      throw new Error((result.error ? result.error + " " : "Cloud request failed ") + "(HTTP " + response.status + ").");
     }
     if (result.error) throw new Error(result.error);
     return result;
