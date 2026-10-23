@@ -587,6 +587,10 @@
         await Promise.allSettled(missing.slice(i, i + 3).map(key => this.get(key)));
       }
       const refreshed = missing.length ? await cloudCall("list", { prefix: normalizedPrefix }) : remote;
+      if (missing.length && normalizedPrefix === "flayora-image:" && CLOUD_WRITE_SESSION) {
+        const revision = String(Date.now()) + "-" + Math.random().toString(36).slice(2, 9);
+        await this.set("flayora-assets-version", revision);
+      }
       return { keys: [...new Set([...(refreshed.keys || []), ...(local.keys || [])])], prefix: normalizedPrefix, shared: true, storageMode: "cloud" };
     }
   };
@@ -666,7 +670,7 @@
     teamUnlocked: false, showProductModal: false, editingCode: null, pinError: "", productModalError: "",
     analytics: { visits: 0, enquiries: [] }, teamTab: "stock", pendingIcon: "gift",
     imageCache: {}, stockSearch: "", stockStatusFilter: "all", selectedCodes: [],
-    lastSyncedAt: null, duplicateSource: null, viewingProduct: null, detailImageIndex: 0
+    lastSyncedAt: null, lastImageVersion: "", imagesChanged: false, duplicateSource: null, viewingProduct: null, detailImageIndex: 0
   };
   let pendingUploadDataUrl = null;
   let pendingUploadDataUrls = [null, null, null];
@@ -674,6 +678,7 @@
   let heroIndex = 0;
   let heroTimer = null;
   let stockSyncTimer = null;
+  let lastPublicSyncAt = 0;
 
   const root = document.getElementById("flayora-root");
 
@@ -741,6 +746,7 @@
     try {
       const listRes = await window.storage.list("flayora-image:", true);
       const keys = (listRes && listRes.keys) || [];
+      const freshCache = {};
       await Promise.all(keys.map(async k => {
         try {
           const r = await window.storage.get(k, true);
@@ -754,11 +760,12 @@
             code = rest.slice(0, lastColon);
             idx = parseInt(rest.slice(lastColon + 1), 10);
           }
-          if (!state.imageCache[code]) state.imageCache[code] = [];
-          state.imageCache[code][idx] = r.value;
+          if (!freshCache[code]) freshCache[code] = [];
+          freshCache[code][idx] = r.value;
         } catch (e) {}
       }));
-    } catch (e) { /* no images yet */ }
+      state.imageCache = freshCache;
+    } catch (e) { /* keep the last known image cache if cloud listing is temporarily unavailable */ }
   }
 
   async function saveImage(code, index, dataUrl) {
@@ -766,18 +773,21 @@
       const saved = await window.storage.set(`flayora-image:${code}:${index}`, dataUrl, true);
       if (!state.imageCache[code]) state.imageCache[code] = [];
       state.imageCache[code][index] = (saved && saved.value) || dataUrl;
+      state.imagesChanged = true;
     } catch (e) { console.error("Image save failed", e); throw e; }
   }
 
   async function deleteImageSlot(code, index) {
-    try { await window.storage.delete(`flayora-image:${code}:${index}`, true); } catch (e) {}
+    await window.storage.delete(`flayora-image:${code}:${index}`, true);
     if (state.imageCache[code]) delete state.imageCache[code][index];
+    state.imagesChanged = true;
   }
 
   async function deleteImage(code) {
     const keysToTry = [`flayora-image:${code}`, `flayora-image:${code}:0`, `flayora-image:${code}:1`, `flayora-image:${code}:2`];
     await Promise.all(keysToTry.map(k => window.storage.delete(k, true).catch(() => {})));
     delete state.imageCache[code];
+    state.imagesChanged = true;
   }
 
   async function loadCatalog() {
@@ -791,6 +801,10 @@
     }
     state.activeSection = state.products[0] ? state.products[0].section : "";
     await loadImages();
+    try {
+      const assetRevision = await window.storage.get("flayora-assets-version", true);
+      state.lastImageVersion = assetRevision && assetRevision.value ? assetRevision.value : "";
+    } catch (_) { state.lastImageVersion = ""; }
     await loadAnalytics();
     state.analytics.visits += 1;
     await saveAnalytics();
@@ -800,14 +814,33 @@
   }
 
   async function pollCatalog(force) {
-    if (!force && (state.view !== "team" || !state.teamUnlocked || state.teamTab !== "stock" || state.showProductModal)) return;
+    if (!force && state.showProductModal) return;
+    if (!force && state.view === "team" && (!state.teamUnlocked || state.teamTab !== "stock")) return;
+    if (!force && state.view !== "team") {
+      const now = Date.now();
+      if (now - lastPublicSyncAt < 30000) return;
+      lastPublicSyncAt = now;
+    }
     try {
-      const res = await window.storage.get(STORAGE_KEY, true);
+      const [res, assetRevision] = await Promise.all([
+        window.storage.get(STORAGE_KEY, true),
+        window.storage.get("flayora-assets-version", true).catch(() => null)
+      ]);
+      let catalogueChanged = false;
       if (res && res.value) {
         const fresh = JSON.parse(res.value);
         if (JSON.stringify(fresh) !== JSON.stringify(state.products)) {
           state.products = fresh;
+          catalogueChanged = true;
+          if (!state.products.some(p => p.section === state.activeSection)) {
+            state.activeSection = state.products[0] ? state.products[0].section : "";
+          }
         }
+      }
+      const nextImageVersion = assetRevision && assetRevision.value ? assetRevision.value : "";
+      if (catalogueChanged || nextImageVersion !== state.lastImageVersion) {
+        await loadImages();
+        state.lastImageVersion = nextImageVersion;
       }
       state.lastSyncedAt = new Date();
       render();
@@ -838,6 +871,12 @@
   async function saveCatalog() {
     try {
       await window.storage.set(STORAGE_KEY, JSON.stringify(state.products), true);
+      if (state.imagesChanged) {
+        const revision = String(Date.now()) + "-" + Math.random().toString(36).slice(2, 9);
+        await window.storage.set("flayora-assets-version", revision, true);
+        state.lastImageVersion = revision;
+        state.imagesChanged = false;
+      }
       state.lastSyncedAt = new Date();
       return true;
     } catch (e) {
