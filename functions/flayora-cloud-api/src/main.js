@@ -13,21 +13,22 @@ const storage = new Storage(client);
 const DATABASE_ID = process.env.APPWRITE_DATABASE_ID;
 const TABLE_ID = process.env.APPWRITE_SITE_DATA_TABLE_ID;
 const BUCKET_ID = process.env.APPWRITE_IMAGE_BUCKET_ID || "flayora-images";
-const ALLOWED_ORIGIN = "https://nobitabot09.github.io";
+const ALLOWED_ORIGINS = new Set(["https://nobitabot09.github.io", "https://opdoraemon86-beep.github.io"]);
 const MAX_ROW_VALUE = 4500;
 const MAX_VALUE_LENGTH = 3000000;
 const CHUNK_MARKER = "__flayoraChunks";
 
 export default async ({ req, res, log, error }) => {
   const origin = req.headers.origin || "";
+  const allowedOrigin = ALLOWED_ORIGINS.has(origin) ? origin : "https://nobitabot09.github.io";
   const headers = {
-    "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+    "Access-Control-Allow-Origin": allowedOrigin,
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, X-Flayora-Session",
     "Vary": "Origin"
   };
 
-  if (origin && origin !== ALLOWED_ORIGIN) {
+  if (origin && !ALLOWED_ORIGINS.has(origin)) {
     return res.json({ error: "Origin not allowed" }, 403, headers);
   }
   if (req.method === "OPTIONS") return res.text("", 204, headers);
