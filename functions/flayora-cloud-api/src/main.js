@@ -87,7 +87,8 @@ export default async ({ req, res, log, error }) => {
     const findRows = async (searchKey) => {
       const result = await tables.listRows({
         databaseId: DATABASE_ID, tableId: TABLE_ID,
-        queries: [Query.equal("key", searchKey)], total: false, limit: 1
+        queries: [Query.equal("key", searchKey), Query.limit(1)],
+        total: false
       });
       return result.rows || [];
     };
@@ -122,7 +123,8 @@ export default async ({ req, res, log, error }) => {
       for (let pageNumber = 0; pageNumber < 20; pageNumber++) {
         const result = await tables.listRows({
           databaseId: DATABASE_ID, tableId: TABLE_ID,
-          total: false, limit: 500, offset
+          queries: [Query.limit(500), Query.offset(offset)],
+          total: false
         });
         const page = result.rows || [];
         all.push(...page);
