@@ -506,7 +506,8 @@
     const headers = { "Content-Type": "text/plain;charset=UTF-8" };
     if (write) {
       if (!CLOUD_WRITE_SESSION) throw new Error("Unlock Team Desk before saving cloud changes.");
-      // Keep requests CORS-simple: custom headers trigger an OPTIONS preflight.\n      payload = { ...payload, sessionToken: CLOUD_WRITE_SESSION };
+      // Keep requests CORS-simple: custom headers trigger an OPTIONS preflight.
+      payload = { ...payload, sessionToken: CLOUD_WRITE_SESSION };
     }
     const response = await fetch(CLOUD_API, {
       method: "POST",
