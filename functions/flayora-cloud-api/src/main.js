@@ -41,7 +41,12 @@ export default async ({ req, res, log, error }) => {
       return res.json({ error: "Server configuration incomplete" }, 500, headers);
     }
 
-    const body = req.bodyJson || {};
+    let body = req.bodyJson || {};
+    if ((!body || !Object.keys(body).length) && typeof req.bodyText === "string" && req.bodyText) {
+      try { body = JSON.parse(req.bodyText); } catch (_) {
+        return res.json({ error: "Invalid JSON request body" }, 400, headers);
+      }
+    }
     const action = body.action;
     const key = typeof body.key === "string" ? body.key : "";
     if (!["list", "auth"].includes(action) && (key.length < 1 || key.length > 255)) {
@@ -79,7 +84,7 @@ export default async ({ req, res, log, error }) => {
     }
 
     if (["set", "delete"].includes(action)) {
-      const supplied = req.headers["x-flayora-session"] || "";
+      const supplied = body.sessionToken || req.headers["x-flayora-session"] || "";
       if (!verifySession(supplied)) {
         return res.json({ error: "Unauthorized or expired Team Desk session" }, 401, headers);
       }
